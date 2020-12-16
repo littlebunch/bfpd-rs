@@ -1,0 +1,2 @@
+[workspace]
+members=["pg","mariadb","graphql"]
