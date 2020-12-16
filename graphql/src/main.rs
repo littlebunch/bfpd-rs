@@ -1,8 +1,5 @@
-#[macro_use]
-//extern crate diesel;
 extern crate dotenv;
 extern crate serde_derive;
-extern crate mariadb;
 use actix_web::{web, App, Error, HttpResponse, HttpServer};
 use dotenv::dotenv;
 use futures::future::Future;

@@ -135,7 +135,6 @@ impl Browse for Food {
         conn: &Self::Conn,
     ) -> Result<Vec<Self::Item>, Box<dyn Error>> {
         use crate::schema::foods::dsl::*;
-        let qc = self.query_count(conn)?;
         let mut q = foods.into_boxed();
         if !self.description.is_empty() {
             let query = &self.description;
