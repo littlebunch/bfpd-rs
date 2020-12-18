@@ -2,26 +2,26 @@ extern crate dotenv;
 extern crate serde;
 extern crate serde_derive;
 extern crate serde_json;
-#[cfg(feature="mariadbfeature")]
+#[cfg(feature="maria")]
 use mariadb::db::MysqlPool;
-#[cfg(feature="mariadbfeature")]
+#[cfg(feature="maria")]
 use mariadb::models::*;
-#[cfg(feature="mariadbfeature")]
+#[cfg(feature="maria")]
 use mariadb::{Browse, Count, Get};
-#[cfg(feature="pgfeature")]
+#[cfg(feature="postgres")]
 use pg::db::PgPool;
-#[cfg(feature="pgfeature")]
+#[cfg(feature="postgres")]
 use pg::models::*;
-#[cfg(feature="pgfeature")]
+#[cfg(feature="postgres")]
 use pg::{Browse, Count, Get};
 use juniper::{graphql_value, FieldError, FieldResult, IntoFieldError, RootNode};
 const MAX_RECS: i32 = 150;
 
 #[derive(Clone)]
 pub struct Context {
-    #[cfg(feature="mariadbfeature")]
+    #[cfg(feature="maria")]
     pub db: MysqlPool,
-    #[cfg(feature="pgfeature")]
+    #[cfg(feature="postgres")]
     pub db: PgPool,
 }
 

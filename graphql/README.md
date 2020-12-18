@@ -29,13 +29,13 @@ git clone git@github.com:littlebunch/bfpd-rs.git
 If you are using MariaDB:
 
 ```bash
-cargo build --release --features mariadbfeature
+cargo build --release --features maria
 ```
 
 If you are using PostgreSQL:
 
 ```bash
-cargo build --release --features pgfeature
+cargo build --release --features postgres
 ```
 
 This will create the graphql-rs server in the top level ./target/release directory.

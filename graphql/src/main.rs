@@ -10,9 +10,9 @@ use std::io;
 use std::sync::Arc;
 mod graphql_schema;
 
-#[cfg(feature="mariadbfeature")]
+#[cfg(feature="maria")]
 use mariadb::db::connect;
-#[cfg(feature="pgfeature")]
+#[cfg(feature="postgres")]
 use pg::db::connect;
 use crate::graphql_schema::{create_schema, Context, Schema};
 

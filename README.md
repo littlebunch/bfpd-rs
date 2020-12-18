@@ -53,62 +53,43 @@ mysql -u [user] < [downloaded.sql]
 
 ### Using the ingest-csv utility  
 
-#### Step 1: Set-up your environment
+01. Build the binary
+Instructions for building the ingest-csv executable are provided in the [ingest-csv/README.md](https://github.com/littlebunch/bfpd-rs/tree/master/ingest-csv).
 
-If you haven't already, install the Rust [toolchain](https://www.rust-lang.org/tools/install) in your work environment.  
+02. Download and unzip the latest csv from the [FDC website](https://fdc.nal.usda.gov/download-datasets.html) into a directory of your choice.  You will need the Branded Foods and Supporting data for All Downloads zip files:
 
-#### Step 2: Clone this repo  
+    ```bash
+    wget https://fdc.nal.usda.gov/fdc-datasets/FoodData_Central_branded_food_csv_2020-10-30.zip
+    ```
 
-```bash
-git clone git@github.com:littlebunch/graphql-rs.git
-```
+    ```bash
+    wget https://fdc.nal.usda.gov/fdc-datasets/FoodData_Central_Supporting_Data_csv_2020-10-30.zip
+    ```
 
-#### Step 3: Build the binary
+03. Use the Diesel migration scripts in the data directory to create an empty database
 
-The utility is a first draft and assumes you are importing into an empty database.  From the ./ingest-csv directory build either a Postgresql version of the binary:
+      For PostgreSQL:  
 
-```bash
-cargo build --release --features pgfeature
-```
+      ```bash
+      psql -U user -W bfpd < data/pg/up.sql
+      ```
 
-Or MariaDB version:
+      For MariaDB:  
 
-```bash
-cargo build --release --features mariadbfeature
-```
+      ```bash
+      mysql -u user -p bfpd < data/mariadb/up.sql
+      ```
 
-#### Step 4: Download and unzip the latest csv from the [FDC website](https://fdc.nal.usda.gov/download-datasets.html) into a directory of your choice
+      Note: You can use the up.sql and down.sql scripts to create a [diesel migration](https://diesel.rs/guides/getting-started/).  This is probably more trouble than it's worth unless you need to change the schema or just want to learn a bit more about diesel migrations.
 
-You will need the Branded Foods and Supporting data for All Downloads zip files:
+04. Load the data by pointing the program to the full path containing the csv
 
-```bash
-wget https://fdc.nal.usda.gov/fdc-datasets/FoodData_Central_branded_food_csv_2020-04-29.zip
-```
+    ```bash
+    ./target/release/ingest-cvs -p /path/to/csv/
+    ```
 
-```bash
-wget https://fdc.nal.usda.gov/fdc-datasets/FoodData_Central_Supporting_Data_csv_2020-04-29.zip
-```
+The load takes about 3-10 minutes depending on your hardware.  Note:  you need to set a DATABASE_URL variable as described in Step 2 below before running the ingest-csv program. 
 
-#### Step 5 Use the Diesel migration scripts in the data directory to create an empty database
+### Step 3 Publish the data 
 
-  For PostgreSQL:  
-
-  ```bash
-  psql -U user -W bfpd < data/pg/up.sql
-  ```
-
-  For MariaDB:  
-
-  ```bash
-  mysql -u user -p bfpd < data/mariadb/up.sql
-  ```
-
-Note: You can use the up.sql and down.sql scripts to create a [diesel migration](https://diesel.rs/guides/getting-started/).  This is probably more trouble than it's worth unless you need to change the schema or just want to learn a bit more about diesel migrations.
-
-#### Step 6 Load the data by pointing the program to the full path containing the csv
-
-```bash
-./target/release/ingest-cvs -p /path/to/csv/
-```
-
-The load takes about 3-10 minutes depending on your hardware.  Note:  you need to set a DATABASE_URL variable as described in Step 2 below before running the ingest-csv program.
+Instructions for building and running the graphql server are provided in the [graphql/README.md](https://github.com/littlebunch/bfpd-rs/tree/master/graphql). 

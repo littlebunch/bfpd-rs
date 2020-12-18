@@ -2,13 +2,13 @@ extern crate serde;
 #[macro_use]
 extern crate clap;
 use clap::App;
-#[cfg(feature = "mariadbfeature")]
+#[cfg(feature = "maria")]
 use mariadb::csv::{process_derivations, process_foods, process_nutdata, process_nutrients};
-#[cfg(feature = "mariadbfeature")]
+#[cfg(feature = "maria")]
 use mariadb::db::connect;
-#[cfg(feature = "pgfeature")]
+#[cfg(feature = "postgres")]
 use pg::csv::{process_derivations, process_foods, process_nutdata, process_nutrients};
-#[cfg(feature = "pgfeature")]
+#[cfg(feature = "postgres")]
 use pg::db::connect;
 
 extern crate dotenv;

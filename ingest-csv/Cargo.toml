@@ -16,6 +16,6 @@ edition = "2018"
     mariadb = {path="../mariadb"}
     pg = {path="../pg"}
 [features]
-pgfeature = []
-mariadbfeature = []
+postgres = []
+maria = []
 
