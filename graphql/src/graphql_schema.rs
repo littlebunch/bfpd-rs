@@ -168,7 +168,6 @@ impl QueryRoot {
         if !browse.filters.food_group.is_empty() {
             let mut fgg = Foodgroup::new();
             fgg.description = browse.filters.food_group;
-            println!("food group={}",fgg.description);
             if fgg.description.len() == 0 {
                 fgg.description = String::from("Unknown");
             }
