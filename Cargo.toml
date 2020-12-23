@@ -1,2 +1,2 @@
 [workspace]
-members=["pg","mariadb","graphql","ingest-csv"]
+members=["pg","mariadb","graphql","ingest-csv","restapi"]

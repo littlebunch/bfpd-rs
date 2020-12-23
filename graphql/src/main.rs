@@ -1,11 +1,10 @@
 extern crate dotenv;
 extern crate serde_derive;
-use actix_web::{web, get, post, App, Error, HttpResponse, HttpServer, Responder};
+use actix_web::{web, get, post, App, Error, HttpResponse, HttpServer};
 use dotenv::dotenv;
 use juniper::http::graphiql::graphiql_source;
 use juniper::http::GraphQLRequest;
 use std::env;
-use std::io;
 use std::sync::Arc;
 mod graphql_schema;
 

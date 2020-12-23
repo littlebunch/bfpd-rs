@@ -14,7 +14,7 @@ use std::error::Error;
 pub trait Get {
     type Item;
     type Conn;
-    fn get(&self, c: &Self::Conn) -> Result<Vec<Self::Item>, Box<dyn Error>>;
+    fn get(&self, c: &Self::Conn) -> Result<Vec<Self::Item>, Box<dyn Error  +Send +Sync>>;
 }
 pub trait Browse {
     type Item;
@@ -26,11 +26,11 @@ pub trait Browse {
         sort: String,
         order: String,
         c: &Self::Conn,
-    ) -> Result<Vec<Self::Item>, Box<dyn Error>>;
+    ) -> Result<Vec<Self::Item>, Box<dyn Error +Send +Sync>>;
 }
 pub trait Count {
     type Item;
     type Conn;
-    fn query_count(&self, c: &Self::Conn) -> Result<i64, Box<dyn Error>>;
+    fn query_count(&self, c: &Self::Conn) -> Result<i64, Box<dyn Error  +Send +Sync>>;
 }
 

@@ -146,7 +146,7 @@ impl Food {
 impl Get for Food {
     type Item = Food;
     type Conn = PgConnection;
-    fn get(&self, conn: &Self::Conn) -> Result<Vec<Self::Item>, Box<dyn Error>> {
+    fn get(&self, conn: &Self::Conn) -> Result<Vec<Self::Item>, Box<dyn Error  +Send +Sync>> {
         use crate::schema;
         use crate::schema::foods::dsl::*;
         let q = schema::foods::table.into_boxed::<Pg>();
@@ -180,7 +180,7 @@ impl Browse for Food {
         sort: String,
         order: String,
         conn: &Self::Conn,
-    ) -> Result<Vec<Self::Item>, Box<dyn Error>> {
+    ) -> Result<Vec<Self::Item>, Box<dyn Error +Send +Sync>> {
         use crate::schema;
         use crate::schema::foods::dsl::*;
         let mut q = schema::foods::table.into_boxed::<Pg>();
@@ -257,7 +257,7 @@ impl Browse for Food {
 impl Count for Food {
     type Item = Food;
     type Conn = PgConnection;
-    fn query_count(&self, conn: &Self::Conn) -> Result<i64, Box<dyn Error>> {
+    fn query_count(&self, conn: &Self::Conn) -> Result<i64, Box<dyn Error  +Send +Sync>> {
         use crate::schema::foods::dsl::*;
         let mut q = foods.into_boxed();
         let mut query = "";
@@ -325,7 +325,7 @@ impl Manufacturer {
 impl Get for Manufacturer {
     type Item = Manufacturer;
     type Conn = PgConnection;
-    fn get(&self, conn: &Self::Conn) -> Result<Vec<Self::Item>, Box<dyn Error>> {
+    fn get(&self, conn: &Self::Conn) -> Result<Vec<Self::Item>, Box<dyn Error  +Send +Sync>> {
         use crate::schema::manufacturers::dsl::*;
         let data = manufacturers.find(&self.id).load::<Manufacturer>(conn)?;
         Ok(data)
@@ -341,7 +341,7 @@ impl Browse for Manufacturer {
         sort: String,
         order: String,
         conn: &Self::Conn,
-    ) -> Result<Vec<Self::Item>, Box<dyn Error>> {
+    ) -> Result<Vec<Self::Item>, Box<dyn Error +Send +Sync>> {
         use crate::schema::manufacturers::dsl::*;
         let mut q = manufacturers.into_boxed();
         match &*sort {
@@ -390,7 +390,7 @@ impl Foodgroup {
 impl Get for Foodgroup {
     type Item = Foodgroup;
     type Conn = PgConnection;
-    fn get(&self, conn: &Self::Conn) -> Result<Vec<Self::Item>, Box<dyn Error>> {
+    fn get(&self, conn: &Self::Conn) -> Result<Vec<Self::Item>, Box<dyn Error  +Send +Sync>> {
         use crate::schema::food_groups::dsl::*;
         let data = food_groups.find(&self.id).load::<Foodgroup>(conn)?;
         Ok(data)
@@ -406,7 +406,7 @@ impl Browse for Foodgroup {
         sort: String,
         order: String,
         conn: &Self::Conn,
-    ) -> Result<Vec<Self::Item>, Box<dyn Error>> {
+    ) -> Result<Vec<Self::Item>, Box<dyn Error +Send +Sync>> {
         use crate::schema::food_groups::dsl::*;
         let mut q = food_groups.into_boxed();
         match &*sort {
@@ -454,7 +454,7 @@ impl Nutrient {
 impl Get for Nutrient {
     type Item = Nutrient;
     type Conn = PgConnection;
-    fn get(&self, conn: &Self::Conn) -> Result<Vec<Self::Item>, Box<dyn Error>> {
+    fn get(&self, conn: &Self::Conn) -> Result<Vec<Self::Item>, Box<dyn Error  +Send +Sync>> {
         use crate::schema::nutrients::dsl::*;
         let data = nutrients
             .filter(nutrientno.eq(&self.nutrientno))
@@ -472,7 +472,7 @@ impl Browse for Nutrient {
         sort: String,
         order: String,
         conn: &Self::Conn,
-    ) -> Result<Vec<Self::Item>, Box<dyn Error>> {
+    ) -> Result<Vec<Self::Item>, Box<dyn Error +Send +Sync>> {
         use crate::schema::nutrients::dsl::*;
         let mut q = nutrients.into_boxed();
         match &*sort {
