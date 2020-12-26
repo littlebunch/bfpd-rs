@@ -16,6 +16,7 @@ use pg::models::*;
 use pg::{Browse, Count, Get};
 use juniper::{graphql_value, FieldError, FieldResult, IntoFieldError, RootNode};
 use crate::views::*;
+
 const MAX_RECS: i32 = 150;
 
 #[derive(Clone)]
@@ -118,7 +119,7 @@ impl QueryRoot {
         let c32 = i32::try_from(c64)?;
         Ok(Querycount { count: c32 })
     }
-    fn foods(
+    async fn foods(
         context: &Context,
         mut browse: Browsequery,
         nids: Vec<String>,
@@ -187,10 +188,11 @@ impl QueryRoot {
         }
         // put any search terms into the food description field
         food.description = browse.filters.query;
+       
         let data = food.browse(max as i64, offset as i64, sort, order, &conn)?;
         Ok(Foodview::build_view(data, &nids, context))
     }
-    fn food(context: &Context, fid: String, nids: Vec<String>) -> FieldResult<Vec<Foodview>> {
+    async fn food(context: &Context, fid: String, nids: Vec<String>) -> FieldResult<Vec<Foodview>> {
         let conn = context.db.get().unwrap();
         let mut food = Food::new();
 
