@@ -7,7 +7,7 @@ use juniper::http::GraphQLRequest;
 use std::env;
 use std::sync::Arc;
 mod graphql_schema;
-
+mod views;
 #[cfg(feature="maria")]
 use mariadb::db::connect;
 #[cfg(feature="postgres")]
