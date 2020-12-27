@@ -1,0 +1,24 @@
+[package]
+name = "restapi"
+version = "0.1.0"
+authors = ["Gary Moore <littlebunch@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+    actix-web = "3.3.2"
+    clap = {version="2",features = ["yaml"]}
+    derive_more = "0.99.11"
+    dotenv = "0.15.0"
+    env_logger = "0.7.1"
+    regex = "1.4.2"
+    serde = "1.0"
+    serde_derive = "1.0"
+    serde_json = "1.0"
+    thiserror = "1.0.22"
+    mariadb = {path="../mariadb"}
+    pg = {path="../pg"}
+[features]
+postgres = []
+maria = []
