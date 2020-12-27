@@ -7,7 +7,8 @@ Feel free to take this project as a starting point for writing your own graphql 
 
 ## What's here
 
-[./src/graphql_schema.rs](https://github.com/littlebunch/graphql-rs/blob/master/src/graphql_schema.rs) -- graphql schema  
+[./src/graphql_schema.rs](https://github.com/littlebunch/graphql-rs/blob/master/src/graphql_schema.rs) -- graphql schema
+[./src/views.rs](https://github.com/littlebunch/graphql-rs/blob/master/src/views.rs)  -- data returned by a query, sort of like business objects
 [./src/main.rs](https://github.com/littlebunch/graphql-rs/blob/master/src/main.rs) -- actix web server init and run  
 
 ## How to Build
@@ -119,7 +120,7 @@ To get you started, here are some sample queries you can paste into the client o
     upc
     description
     manufacturer
-    food
+    description
     ingredients
     foodGroup
     nutrientData {
@@ -205,7 +206,7 @@ To get you started, here are some sample queries you can paste into the client o
 
 ```bash
 {
-  foodGroups(max:150,offset:0,sort:"name",order:"asc") {
+  manufacturers(max:150,offset:0,sort:"name",order:"asc") {
     id
     name
   }
