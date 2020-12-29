@@ -450,6 +450,13 @@ impl Nutrient {
             unit: String::from("Unknown"),
         }
     }
+    pub fn find_by_no(&self, conn: &PgConnection) -> Result<Nutrient, Box<dyn Error>> {
+        use crate::schema::nutrients::dsl::*;
+        let n = nutrients
+            .filter(nutrientno.eq(&self.nutrientno))
+            .first::<Nutrient>(conn)?;
+        Ok(n)
+    }
 }
 impl Get for Nutrient {
     type Item = Nutrient;
@@ -496,8 +503,6 @@ impl Browse for Nutrient {
             }
         };
         q = q.limit(max).offset(off);
-        // let debug = diesel::debug_query::<diesel::mysql::Mysql, _>(&q);
-        // println!("The query: {:?}", debug);
         let data = q.load::<Nutrient>(conn)?;
         Ok(data)
     }
@@ -534,8 +539,59 @@ impl Nutrientdata {
             food_id: 0,
         }
     }
+    
 }
-
+impl Browse for Nutrientdata {
+    type Item = Nutrientdata;
+    type Conn = PgConnection;
+    fn browse(
+        &self,
+        max: i64,
+        off: i64,
+        sort: String,
+        order: String,
+        conn: &Self::Conn,
+    ) -> Result<Vec<Self::Item>, Box<dyn Error +Send +Sync>> {
+        use crate::schema::nutrient_data::dsl::*;
+        let mut q = nutrient_data.into_boxed();
+        match &*sort {
+            "value" => {
+                q = match &*order {
+                    "desc" => q.order(Box::new(value.desc())),
+                    _ => q.order(Box::new(value.asc())),
+                }
+            }
+            _ => {
+                q = match &*order {
+                    "desc" => q.order(Box::new(id.desc())),
+                    _ => q.order(Box::new(id.asc())),
+                }
+            }
+        };
+        if self.nutrient_id > 0 {
+            q = q.filter(nutrient_id.eq(self.nutrient_id));
+        }
+        let min:f64 = match self.minimum {
+            None => 0.0,
+            Some(m) => m,
+        };
+        let mut mx:f64 = match self.maximum {
+            None => 0.0,
+            Some(m) => m,
+        };
+        if min > 0.0 {
+            if mx == 0.0 || mx < min {
+                mx=min;
+            }
+            q = q.filter(value.between(&min,&mx))
+        }
+        q = q.limit(max).offset(off);
+        //let debug = diesel::debug_query::<Pg, _>(&q);
+        //println!("The query: {:?}", debug);
+        let data = q.load::<Nutrientdata>(conn)?;
+        Ok(data)
+    }
+}
 // Derivations are descriptions of how a nutrient value was derived.
 #[derive(
     Identifiable, Queryable, Associations, PartialEq, Insertable, Serialize, Deserialize, Debug,

@@ -1,8 +1,12 @@
 use crate::routes::Context;
 #[cfg(feature = "maria")]
 use mariadb::models::*;
+#[cfg(feature = "maria")]
+use mariadb::Get;
 #[cfg(feature = "postgres")]
 use pg::models::*;
+#[cfg(feature = "postgres")]
+use pg::Get;
 
 use serde::{Deserialize, Serialize};
 use std::error::Error;
@@ -119,5 +123,58 @@ impl Nutrientdataview {
             derivation: n.derivation.to_string(),
             derivation_code: n.derivation_code.to_string(),
         }
+    }
+}
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Reportview {
+    pub fdc_id: String,
+    pub description: String,
+    pub upc: String,
+    pub serving_size: Option<f64>,
+    pub serving_unit: Option<String>,
+    pub serving_description: Option<String>,
+    pub nutrient: String,
+    pub unit_value: f64,
+    pub portion_value: f64,
+}
+impl Reportview {
+    pub fn build_view(
+        nd: Vec<Nutrientdata>,
+        context: &Context,
+    ) -> Result<Vec<Self>, Box<dyn Error + Send + Sync>> {
+        let conn = context.db.get().unwrap();
+        let mut rv: Vec<Self> = Vec::new();
+        let mut f = Food::new();
+        for i in &nd {
+            f.id = i.food_id;
+            let fv = f.get(&conn)?;
+            rv.push(Reportview {
+                fdc_id: fv[0].fdc_id.to_string(),
+                upc: fv[0].upc.to_string(),
+                description: fv[0].description.to_string(),
+                serving_size: fv[0].serving_size,
+                serving_description: Some(
+                    fv[0]
+                        .serving_description
+                        .as_ref()
+                        .map(|n| n.to_string())
+                        .unwrap_or("unknown".to_string()),
+                ),
+                serving_unit: Some(
+                    fv[0]
+                        .serving_unit
+                        .as_ref()
+                        .map(|n| n.to_string())
+                        .unwrap_or("unknown".to_string()),
+                ),
+                unit_value: i.value,
+                portion_value: match fv[0].serving_size {
+                    Some(x) => (x as f64 / 100.0) * i.value,
+                    None => 0.0,
+                },
+                nutrient: "204".to_string(),
+            })
+        }
+        Ok(rv)
     }
 }

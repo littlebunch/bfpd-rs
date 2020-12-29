@@ -9,6 +9,7 @@ pub enum CustomError {
     OrderError,
     OffsetError,
     FoodSortError,
+    MinMaxError,
     Unknown,
 }
 #[derive(Serialize)]
@@ -17,7 +18,7 @@ pub struct ErrorResponse {
     error: String,
     message: String,
 }
-impl ErrorResponse  {
+impl ErrorResponse {
     pub fn new(e: CustomError) -> Self {
         match e {
             CustomError::MaxValidationError => Self {
@@ -39,9 +40,16 @@ impl ErrorResponse  {
             CustomError::FoodSortError => Self {
                 code: StatusCode::UNPROCESSABLE_ENTITY.as_u16(),
                 error: "Unprocessable parameter".to_string(),
-                message: "Invalid order parameter. Must be 'description', 'id', 'fdcid' or 'upc'".to_string(),
+                message: "Invalid order parameter. Must be 'description', 'id', 'fdcid' or 'upc'"
+                    .to_string(),
             },
-            CustomError::Unknown=> Self {
+            CustomError::MinMaxError => Self {
+                code: StatusCode::UNPROCESSABLE_ENTITY.as_u16(),
+                error: "Unprocessable parameter".to_string(),
+                message: "Invalid parameter. minimum value must be less than maximum value"
+                    .to_string(),
+            },
+            CustomError::Unknown => Self {
                 code: StatusCode::INTERNAL_SERVER_ERROR.as_u16(),
                 error: "Internal server error".to_string(),
                 message: "Unknown Internal Error".to_string(),

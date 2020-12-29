@@ -10,7 +10,7 @@ use dotenv::dotenv;
 use mariadb::db::connect;
 #[cfg(feature = "postgres")]
 use pg::db::connect;
-use routes::{food, foods, Context};
+use routes::{food, foods, nutrient_report, Context};
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -22,6 +22,7 @@ async fn main() -> std::io::Result<()> {
             .data(context.clone())
             .service(food)
             .service(foods)
+            .service(nutrient_report)
     })
     .bind("0.0.0.0:8080")?
     .run()
