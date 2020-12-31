@@ -10,6 +10,7 @@ pub enum CustomError {
     OffsetError,
     FoodSortError,
     MinMaxError,
+    ReportSortError,
     Unknown,
 }
 #[derive(Serialize)]
@@ -40,7 +41,7 @@ impl ErrorResponse {
             CustomError::FoodSortError => Self {
                 code: StatusCode::UNPROCESSABLE_ENTITY.as_u16(),
                 error: "Unprocessable parameter".to_string(),
-                message: "Invalid order parameter. Must be 'description', 'id', 'fdcid' or 'upc'"
+                message: "Invalid sort parameter. Must be 'description', 'id', 'fdcid' or 'upc'"
                     .to_string(),
             },
             CustomError::MinMaxError => Self {
@@ -48,6 +49,11 @@ impl ErrorResponse {
                 error: "Unprocessable parameter".to_string(),
                 message: "Invalid parameter. minimum value must be less than maximum value"
                     .to_string(),
+            },
+            CustomError::ReportSortError => Self {
+                code: StatusCode::UNPROCESSABLE_ENTITY.as_u16(),
+                error: "Unprocessable parameter".to_string(),
+                message: "Invalid sor parameter. Must be 'value' or 'portion'".to_string(),
             },
             CustomError::Unknown => Self {
                 code: StatusCode::INTERNAL_SERVER_ERROR.as_u16(),

@@ -329,6 +329,7 @@ impl NutdataCsv {
         Nutrientdata {
             id: 0,
             value: self.amount,
+            portion_value: self.amount,
             standard_error: None,
             minimum: None,
             maximum: None,
@@ -358,9 +359,14 @@ pub fn process_nutdata(path: String, conn: &MysqlConnection) -> Result<usize, Bo
             f.fdc_id = ndsv.fdc_id.to_string();
             let fv = f.get(conn).expect("Cannot get food id");
             fid = fv[0].id;
+            f.serving_size=fv[0].serving_size;
             ofdc_id = ndsv.fdc_id.to_string();
         }
-        let nd = ndsv.create_nutdata(fid);
+        let mut nd = ndsv.create_nutdata(fid);
+        nd.portion_value = match f.serving_size {
+            Some(x) => (x as f64 / 100.0) * nd.value,
+            None => 0.0,
+        };
         nds.push(nd);
         // insert the Nutrientdata when vec contains BATCH_SIZE recs
         if nds.len() % BATCH_SIZE == 0 {

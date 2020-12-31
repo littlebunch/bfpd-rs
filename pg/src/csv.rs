@@ -350,6 +350,7 @@ impl NutdataCsv {
         Nutrientdata {
             id: 0,
             value: self.amount,
+            portion_value: self.amount,
             standard_error: None,
             minimum: None,
             maximum: None,
@@ -379,13 +380,20 @@ pub fn process_nutdata(path: String, conn: &PgConnection) -> Result<usize, Box<d
             f.fdc_id = ndsv.fdc_id.to_string();
             let fv = f.get(conn).expect("Cannot get food id");
             fid = fv[0].id;
+            f.serving_size=fv[0].serving_size;
             ofdc_id = ndsv.fdc_id.to_string();
         }
-        let nd = ndsv.create_nutdata(fid);
+        
+        let mut nd = ndsv.create_nutdata(fid);
+        nd.portion_value = match f.serving_size {
+            Some(x) => (x as f64 / 100.0) * nd.value,
+            None => 0.0,
+        };
         match () {
-            #[cfg(not(feature = "pg"))]
+            #[cfg(not(feature = "postgres"))]
             () => nds.push((
                 value.eq(nd.value),
+                portion_value.eq(nd.portion_value),
                 minimum.eq(nd.minimum),
                 maximum.eq(nd.maximum),
                 median.eq(nd.median),
@@ -393,7 +401,7 @@ pub fn process_nutdata(path: String, conn: &PgConnection) -> Result<usize, Box<d
                 nutrient_id.eq(nd.nutrient_id),
                 food_id.eq(nd.food_id),
             )),
-            #[cfg(feature = "pg")]
+            #[cfg(feature = "postgres")]
             () => nds.push(nd),
         };
         // insert the Nutrientdata when vec contains BATCH_SIZE recs

@@ -1,5 +1,5 @@
 use crate::errors::{CustomError, ErrorResponse};
-use crate::views::{Foodview,Reportview};
+use crate::views::{Foodview, Reportview};
 use actix_web::{get, web, web::Data, Error, HttpResponse};
 #[cfg(feature = "maria")]
 use mariadb::db::MysqlPool;
@@ -12,7 +12,7 @@ use pg::db::PgPool;
 #[cfg(feature = "postgres")]
 use pg::models::*;
 #[cfg(feature = "postgres")]
-use pg::{Browse, Count, Get};
+use pg::{Browse, Get};
 use serde::{Deserialize, Serialize};
 pub const MAX_RECS: i32 = 150;
 
@@ -110,6 +110,7 @@ pub struct Reportquery {
     max: Option<i32>,
     offset: Option<i32>,
     order: Option<String>,
+    sort: Option<String>,
     nutrient: String,
     vmin: Option<f64>,
     vmax: Option<f64>,
@@ -148,8 +149,20 @@ pub async fn nutrient_report(
     } else {
         nd.nutrient_id = n;
     }
+    let mut sort = match browse.sort {
+        None => "value".to_string(),
+        _ => browse.sort.as_ref().unwrap().to_string(),
+    };
+    sort = sort.to_lowercase();
+    sort = match &*sort {
+        "portion" => "portion".to_string(),
+        _ => "".to_string(),
+    };
+    if sort.is_empty() {
+        errs.push(ErrorResponse::new(CustomError::ReportSortError));
+    }
     let order = match browse.order {
-        None => "asc".to_string(),
+        None => "desc".to_string(),
         _ => browse.order.as_ref().unwrap().to_string(),
     };
     if order.to_uppercase() != "ASC" && order.to_uppercase() != "DESC" {
@@ -172,7 +185,7 @@ pub async fn nutrient_report(
         return HttpResponse::BadRequest().json(errs).await;
     }
 
-    let data = web::block(move || nd.browse(max as i64, offset as i64, "value".to_string(), order, &conn))
+    let data = web::block(move || nd.browse(max as i64, offset as i64, sort, order, &conn))
         .await
         .unwrap();
     Ok(web::block(move || Reportview::build_view(data, &ctx))

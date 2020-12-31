@@ -149,24 +149,15 @@ impl Get for Food {
     fn get(&self, conn: &Self::Conn) -> Result<Vec<Self::Item>, Box<dyn Error  +Send +Sync>> {
         use crate::schema;
         use crate::schema::foods::dsl::*;
-        let q = schema::foods::table.into_boxed::<Pg>();
-        let data;
+        let mut q = schema::foods::table.into_boxed::<Pg>();
         if self.upc != "unknown" {
-            data = q
-                .select(FOOD_COLUMNS)
-                .filter(upc.eq(&self.upc))
-                .load::<Food>(conn)?;
+            q = q.filter(upc.eq(&self.upc));
         } else if self.id > 0 {
-            data = q
-                .select(FOOD_COLUMNS)
-                .filter(id.eq(&self.id))
-                .load::<Food>(conn)?;
+            q=q.filter(id.eq(&self.id));
         } else {
-            data = q
-                .select(FOOD_COLUMNS)
-                .filter(fdc_id.eq(&self.fdc_id))
-                .load::<Food>(conn)?;
+            q=q.filter(fdc_id.eq(&self.fdc_id));
         }
+        let data = q.select(FOOD_COLUMNS).load::<Food>(conn)?;
         Ok(data)
     }
 }
@@ -517,6 +508,7 @@ impl Browse for Nutrient {
 pub struct Nutrientdata {
     pub id: i32,
     pub value: f64,
+    pub portion_value: f64,
     pub standard_error: Option<f64>,
     pub minimum: Option<f64>,
     pub maximum: Option<f64>,
@@ -530,6 +522,7 @@ impl Nutrientdata {
         Self {
             id: 0,
             value: 0.0,
+            portion_value: 0.0,
             standard_error: None,
             minimum: None,
             maximum: None,
@@ -540,7 +533,8 @@ impl Nutrientdata {
         }
     }
     
-}
+}   
+    
 impl Browse for Nutrientdata {
     type Item = Nutrientdata;
     type Conn = PgConnection;
@@ -555,16 +549,16 @@ impl Browse for Nutrientdata {
         use crate::schema::nutrient_data::dsl::*;
         let mut q = nutrient_data.into_boxed();
         match &*sort {
-            "value" => {
+            "portion" => {
                 q = match &*order {
-                    "desc" => q.order(Box::new(value.desc())),
-                    _ => q.order(Box::new(value.asc())),
+                    "desc" => q.order(Box::new(portion_value.desc())),
+                    _ => q.order(Box::new(portion_value.asc())),
                 }
             }
             _ => {
                 q = match &*order {
-                    "desc" => q.order(Box::new(id.desc())),
-                    _ => q.order(Box::new(id.asc())),
+                    "desc" => q.order(Box::new(value.desc())),
+                    _ => q.order(Box::new(value.asc())),
                 }
             }
         };
@@ -583,7 +577,11 @@ impl Browse for Nutrientdata {
             if mx == 0.0 || mx < min {
                 mx=min;
             }
-            q = q.filter(value.between(&min,&mx))
+            if sort == "portion" {
+              q = q.filter(portion_value.between(&min,&mx));
+            } else {
+                q = q.filter(value.between(&min,&mx));
+            }
         }
         q = q.limit(max).offset(off);
         //let debug = diesel::debug_query::<Pg, _>(&q);
@@ -639,6 +637,44 @@ impl NutrientdataForm {
             derivation: (*(d.description)).to_string(),
             derivation_code: (*(d.code)).to_string(),
         }
+    }
+}
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ReportForm {
+    pub fdc_id: String,
+    pub description: String,
+    pub upc: String,
+    pub serving_size: Option<f64>,
+    pub serving_unit: Option<String>,
+    pub serving_description: Option<String>,
+    pub unit_value: f64,
+    pub portion_value: f64,
+}
+impl ReportForm {
+    pub fn create((nd,f):(&Nutrientdata,&Food)) -> Self {
+        Self {
+        unit_value: nd.value,
+        portion_value: nd.portion_value,
+        fdc_id: f.fdc_id.to_string(),
+        description: f.description.to_string(),
+        upc: f.upc.to_string(),
+        serving_size: f.serving_size, 
+        serving_description: Some(
+            f
+                .serving_description
+                .as_ref()
+                .map(|n| n.to_string())
+                .unwrap_or("unknown".to_string()),
+        ),
+        serving_unit: Some(
+            f
+                .serving_unit
+                .as_ref()
+                .map(|n| n.to_string())
+                .unwrap_or("unknown".to_string()),
+        ),
+        }
+
     }
 }
 #[cfg(test)]

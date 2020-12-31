@@ -133,7 +133,6 @@ pub struct Reportview {
     pub serving_size: Option<f64>,
     pub serving_unit: Option<String>,
     pub serving_description: Option<String>,
-    pub nutrient: String,
     pub unit_value: f64,
     pub portion_value: f64,
 }
@@ -168,11 +167,7 @@ impl Reportview {
                         .unwrap_or("unknown".to_string()),
                 ),
                 unit_value: i.value,
-                portion_value: match fv[0].serving_size {
-                    Some(x) => (x as f64 / 100.0) * i.value,
-                    None => 0.0,
-                },
-                nutrient: "204".to_string(),
+                portion_value: i.portion_value,
             })
         }
         Ok(rv)

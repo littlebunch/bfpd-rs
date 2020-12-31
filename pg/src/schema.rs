@@ -44,6 +44,7 @@ table! {
     nutrient_data (id) {
         id -> Int4,
         value -> Float8,
+        portion_value -> Float8,
         standard_error -> Nullable<Float8>,
         minimum -> Nullable<Float8>,
         maximum -> Nullable<Float8>,

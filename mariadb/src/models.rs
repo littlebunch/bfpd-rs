@@ -112,14 +112,15 @@ impl Get for Food {
     type Conn = MysqlConnection;
     fn get(&self, conn: &Self::Conn) -> Result<Vec<Self::Item>, Box<dyn Error  +Send +Sync>> {
         use crate::schema::foods::dsl::*;
-        let data;
+        let mut q = foods.into_boxed();
         if self.upc != "unknown" {
-            data = foods.filter(upc.eq(&self.upc)).load::<Food>(conn)?;
+            q = q.filter(upc.eq(&self.upc));
         } else if self.id > 0 {
-            data = foods.find(&self.id).load::<Food>(conn)?;
+            q=q.filter(id.eq(&self.id));
         } else {
-            data = foods.filter(fdc_id.eq(&self.fdc_id)).load::<Food>(conn)?;
+            q=q.filter(fdc_id.eq(&self.fdc_id));
         }
+        let data = q.load::<Food>(conn)?;
         Ok(data)
     }
 }
@@ -471,6 +472,7 @@ impl Browse for Nutrient {
 pub struct Nutrientdata {
     pub id: i32,
     pub value: f64,
+    pub portion_value: f64,
     pub standard_error: Option<f64>,
     pub minimum: Option<f64>,
     pub maximum: Option<f64>,
@@ -484,6 +486,7 @@ impl Nutrientdata {
         Self {
             id: 0,
             value: 0.0,
+            portion_value: 0.0,
             standard_error: None,
             minimum: None,
             maximum: None,
@@ -512,6 +515,12 @@ impl Browse for Nutrientdata {
                 q = match &*order {
                     "desc" => q.order(Box::new(value.desc())),
                     _ => q.order(Box::new(value.asc())),
+                }
+            }
+            "portion" => {
+                q = match &*order {
+                    "desc" => q.order(Box::new(portion_value.desc())),
+                    _ => q.order(Box::new(portion_value.asc())),
                 }
             }
             _ => {

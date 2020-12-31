@@ -53,6 +53,7 @@ table! {
     nutrient_data (id) {
         id -> Integer,
         value -> Double,
+        portion_value -> Double,
         standard_error -> Nullable<Double>,
         minimum -> Nullable<Double>,
         maximum -> Nullable<Double>,
