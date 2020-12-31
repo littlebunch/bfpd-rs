@@ -156,6 +156,7 @@ pub async fn nutrient_report(
     sort = sort.to_lowercase();
     sort = match &*sort {
         "portion" => "portion".to_string(),
+        "value" => "value".to_string(),
         _ => "".to_string(),
     };
     if sort.is_empty() {
@@ -188,6 +189,7 @@ pub async fn nutrient_report(
     let data = web::block(move || nd.browse(max as i64, offset as i64, sort, order, &conn))
         .await
         .unwrap();
+    
     Ok(web::block(move || Reportview::build_view(data, &ctx))
         .await
         .map(|fvs| HttpResponse::Ok().json(fvs))
