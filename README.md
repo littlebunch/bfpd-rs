@@ -92,4 +92,4 @@ The load takes about 3-10 minutes depending on your hardware.  Note:  you need t
 
 ### Step 3 Publish the data 
 
-Instructions for building and running the graphql server are provided in the [graphql/README.md](https://github.com/littlebunch/bfpd-rs/tree/master/graphql). 
+You can use the provided graphql or REST binaries to publish the data.  Instructions for building and running the graphql server are provided in the [graphql/README.md](https://github.com/littlebunch/bfpd-rs/tree/master/graphql).  Instructions for the REST api are provided in the [restapi/README.md](https://github.com/littlebunch/bfpd-rs/tree/master/restapi).
