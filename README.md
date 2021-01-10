@@ -6,12 +6,13 @@
 
 The repository is organized as a [Cargo workspace](https://doc.rust-lang.org/book/ch14-03-cargo-workspaces.htmlhttps://doc.rust-lang.org/book/ch14-03-cargo-workspaces.html).  
 
-[./mariadb](https://github.com/littlebunch/graphql-rs/blob/master/src/csv.rs) -- MariadDB library  
-[./pg](https://github.com/littlebunch/graphql-rs/blob/master/src/db.rs) -- PostgreSQL library  
-[./graphql](https://github.com/littlebunch/graphql-rs/blob/master/src/graphql_schema.rs) -- graphql server  
-[./ingest-csv](https://github.com/littlebunch/graphql-rs/blob/master/src/bin/ingest-csv.rs) -- cli utility for importing the USDA csv files into the database  
-[./data/pg](https://github.com/littlebunch/graphql-rs/tree/master/datab/pg) -- Diesel migration scripts to create the PostgreSQL database and schema.rs  
-[./data/mariadb](https://github.com/littlebunch/graphql-rs/tree/master/database/mariadb) -- Diesel migration scripts to create the MariaDB database and schema.rs  
+[./mariadb](https://github.com/littlebunch/bfpd-rs/blob/master/src/csv.rs) -- MariadDB library  
+[./pg](https://github.com/littlebunch/bfpd-rs/blob/master/src/db.rs) -- PostgreSQL library  
+[./graphql](https://github.com/littlebunch/bfpd-rs/blob/master/src/main.rs) -- graphql server  
+[./restapi](https://github.com/littlebunch/bfpd-rs/blob/master/src/main.rs) -- REST server  
+[./ingest-csv](https://github.com/littlebunch/bfpd-rs/blob/master/src/bin/ingest-csv.rs) -- cli utility for importing the USDA csv files into the database  
+[./data/pg](https://github.com/littlebunch/bfpd-rs/tree/master/database/pg) -- Diesel migration scripts to create the PostgreSQL database and schema.rs  
+[./data/mariadb](https://github.com/littlebunch/bfpd-rs/tree/master/database/mariadb) -- Diesel migration scripts to create the MariaDB database and schema.rs  
 
 ## How to Set-up the Database  
 
