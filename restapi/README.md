@@ -6,9 +6,9 @@ Feel free to take this project as a starting point for writing your own service.
 ## What's here
 
 [./src/errors.rs](https://github.com/littlebunch/bfpd-rs/blob/master/restapi/src/errors.rs) -- wrapper for HTTP error responses  
-[./src/routes.rs](https://github.com/littlebunch/bfpd-rs/blob/master/restsapi/src/routes.rs)  -- the request handlers  
-[./src/views.rs](https://github.com/littlebunch/bfpd-rs/blob/master/restsapi/src/views.rs)  -- data returned by a query, sort of like business objects  
-[./src/main.rs](https://github.com/littlebunch/bfpd-rs/blob/master/restsapi/src/main.rs) -- actix web server init and run    
+[./src/routes.rs](https://github.com/littlebunch/bfpd-rs/blob/master/restapi/src/routes.rs)  -- the request handlers  
+[./src/views.rs](https://github.com/littlebunch/bfpd-rs/blob/master/restapi/src/views.rs)  -- data returned by a query, sort of like business objects  
+[./src/main.rs](https://github.com/littlebunch/bfpd-rs/blob/master/restapi/src/main.rs) -- actix web server init and run    
 
 ## How to Build
 
