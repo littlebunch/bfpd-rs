@@ -1,14 +1,14 @@
 # restapi
-A REST server for the [USDA Branded Food Products](https://fdc.nal.usda.gov) dataset implemented with [Rust](https://www.rust-lang.org) using [Actix](https://actix.rs), [Juniper](https://docs.rs/juniper) and [Diesel](https://diesel.rs).  The data store can be [MariaDB](https://mariadb.com) or [PostgreSQL](https://www.postgresql.org).  
+A REST server for the [USDA Branded Food Products](https://fdc.nal.usda.gov) dataset implemented with [Rust](https://www.rust-lang.org) using [Actix](https://actix.rs) and [Diesel](https://diesel.rs).  The data store can be [MariaDB](https://mariadb.com) or [PostgreSQL](https://www.postgresql.org).  
 
-Feel free to take this project as a starting point for writing your own graphql service.
+Feel free to take this project as a starting point for writing your own service.
 
 ## What's here
 
-[./src/errors.rs](https://github.com/littlebunch/restsapi/blob/master/src/errors.rs) -- wrapper for HTTP error responses
-[./src/routes.rs](https://github.com/littlebunch/restsapi/blob/master/src/routes.rs)  -- the request handlers
-[./src/views.rs](https://github.com/littlebunch/restsapi/blob/master/src/views.rs)  -- data returned by a query, sort of like business objects
-[./src/main.rs](https://github.com/littlebunch/restsapi/blob/master/src/main.rs) -- actix web server init and run  
+[./src/errors.rs](https://github.com/littlebunch/restsapi/blob/master/src/errors.rs) -- wrapper for HTTP error responses  
+[./src/routes.rs](https://github.com/littlebunch/restsapi/blob/master/src/routes.rs)  -- the request handlers  
+[./src/views.rs](https://github.com/littlebunch/restsapi/blob/master/src/views.rs)  -- data returned by a query, sort of like business objects  
+[./src/main.rs](https://github.com/littlebunch/restsapi/blob/master/src/main.rs) -- actix web server init and run    
 
 ## How to Build
 
@@ -44,7 +44,7 @@ This will create the restapi server binary in the top level ./target/release dir
 
 ### Step 1: Start the service
 
-You need to set an environment variable named DATABASE_URL.  It generally makes sense to put creae an .env file in the root path of your project which gets loaded at start-up:
+You need to set an environment variable named DATABASE_URL.  It generally makes sense to create an .env file in the root path of your project which gets loaded at start-up:
 
 ```bash
 DATABASE_URL=postgres://user:password@localhost/bfpd
