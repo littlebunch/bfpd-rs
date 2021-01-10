@@ -104,9 +104,67 @@ impl Food {
         }
         Ok(ndv)
     }
+    pub fn get_report(
+        &self,
+        max: i64,
+        off: i64,
+        sort: String,
+        min: f64,
+        mx: f64,
+        nid: i32,
+        conn: &MysqlConnection,
+    ) -> Result<Vec<ReportForm>, Box<dyn Error  +Send +Sync>> {
+        use crate::schema::foods::dsl::*;
+        use crate::schema::nutrient_data::dsl::*;
 
-    
-}
+          
+        let data = match &*sort {
+            "portion"=>foods
+                .inner_join(nutrient_data).select((fdc_id,upc,description,serving_size,serving_description,serving_unit,value,portion_value))
+                 .filter(nutrient_id.eq(nid))
+                .filter(portion_value.between(&min,&mx))
+                .limit(max)
+                .offset(off)
+                .order(portion_value.desc())
+                .load::<(String,String,String,Option<f64>,Option<String>,Option<String>,f64,f64)>(conn)?,
+            _ => nutrient_data.inner_join(foods).select((fdc_id,upc,description,serving_size,serving_description,serving_unit,value,portion_value))
+            .filter(nutrient_id.eq(nid)) 
+            .filter(value.between(&min,&mx))
+             .limit(max)
+             .offset(off)
+             .order(value.desc())
+             .load::<(String,String,String,Option<f64>,Option<String>,Option<String>,f64,f64)>(conn)?,
+        };
+        let mut rdv: Vec<ReportForm> = Vec::new();
+       
+        for i in &data {
+            let (f,u,d,ss,sd,su,v, pv) = &i;
+            rdv.push(ReportForm{
+                unit_value: *v,
+                portion_value: *pv,
+                fdc_id: f.to_string(),
+                description: d.to_string(),
+                upc: u.to_string(),
+                serving_size: *ss, 
+                serving_description: Some(
+                    sd
+                        .as_ref()
+                        .map(|n| n.to_string())
+                        .unwrap_or("unknown".to_string()),
+                ),
+                serving_unit: Some(
+                    su
+                        .as_ref()
+                        .map(|n| n.to_string())
+                        .unwrap_or("unknown".to_string()),
+                ),
+                });
+        
+            
+        }
+        Ok(rdv)
+    }
+}  
 impl Get for Food {
     type Item = Food;
     type Conn = MysqlConnection;
@@ -496,7 +554,8 @@ impl Nutrientdata {
             food_id: 0,
         }
     }
-}
+
+}   
 impl Browse for Nutrientdata {
     type Item = Nutrientdata;
     type Conn = MysqlConnection;
@@ -603,6 +662,17 @@ impl NutrientdataForm {
             derivation_code: (*(d.code)).to_string(),
         }
     }
+}
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ReportForm {
+    pub fdc_id: String,
+    pub description: String,
+    pub upc: String,
+    pub serving_size: Option<f64>,
+    pub serving_unit: Option<String>,
+    pub serving_description: Option<String>,
+    pub unit_value: f64,
+    pub portion_value: f64,
 }
 
 #[cfg(test)]

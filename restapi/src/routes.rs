@@ -1,5 +1,5 @@
 use crate::errors::{CustomError, ErrorResponse};
-use crate::views::{Foodview, Reportview};
+use crate::views::Foodview;
 use actix_web::{get, web, web::Data, Error, HttpResponse};
 #[cfg(feature = "maria")]
 use mariadb::db::MysqlPool;
@@ -109,11 +109,10 @@ pub async fn foods(
 pub struct Reportquery {
     max: Option<i32>,
     offset: Option<i32>,
-    order: Option<String>,
     sort: Option<String>,
     nutrient: String,
-    vmin: Option<f64>,
-    vmax: Option<f64>,
+    vmin: f64,
+    vmax: f64,
 }
 
 #[get("/report")]
@@ -123,7 +122,6 @@ pub async fn nutrient_report(
 ) -> Result<HttpResponse, Error> {
     let conn = ctx.db.get().expect("couldn't get DB connection from pool");
     let mut errs: Vec<ErrorResponse> = Vec::new();
-    let mut nd = Nutrientdata::new();
     let mut n = Nutrient::new();
     let max = match browse.max {
         None => 50,
@@ -146,8 +144,6 @@ pub async fn nutrient_report(
     };
     if n == -1 {
         errs.push(ErrorResponse::new(CustomError::MaxValidationError));
-    } else {
-        nd.nutrient_id = n;
     }
     let mut sort = match browse.sort {
         None => "value".to_string(),
@@ -162,36 +158,15 @@ pub async fn nutrient_report(
     if sort.is_empty() {
         errs.push(ErrorResponse::new(CustomError::ReportSortError));
     }
-    let order = match browse.order {
-        None => "desc".to_string(),
-        _ => browse.order.as_ref().unwrap().to_string(),
-    };
-    if order.to_uppercase() != "ASC" && order.to_uppercase() != "DESC" {
-        errs.push(ErrorResponse::new(CustomError::OrderError));
-    }
-    let vmin: f64 = match browse.vmin {
-        None => 0.0,
-        _ => browse.vmin.unwrap(),
-    };
-    let vmax: f64 = match browse.vmax {
-        None => 0.0,
-        _ => browse.vmax.unwrap(),
-    };
-    nd.minimum = Some(vmin);
-    nd.maximum = Some(vmax);
-    if nd.minimum > nd.maximum {
+    if browse.vmin > browse.vmax {
         errs.push(ErrorResponse::new(CustomError::MinMaxError));
     }
     if errs.len() > 0 {
         return HttpResponse::BadRequest().json(errs).await;
     }
-
-    let data = web::block(move || nd.browse(max as i64, offset as i64, sort, order, &conn))
+    let f = Food::new();
+    let data = web::block(move || f.get_report(max as i64, offset as i64, sort, browse.vmin,browse.vmax,n,&conn))
         .await
         .unwrap();
-    
-    Ok(web::block(move || Reportview::build_view(data, &ctx))
-        .await
-        .map(|fvs| HttpResponse::Ok().json(fvs))
-        .map_err(|_| HttpResponse::InternalServerError())?)
+    Ok(HttpResponse::Ok().json(data))
 }

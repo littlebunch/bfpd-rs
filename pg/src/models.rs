@@ -22,7 +22,8 @@ use std::error::Error;
     Deserialize,
     Debug,
 )]
-#[belongs_to(Manufacturer)]
+//#[belongs_to(Manufacturer)]
+//#[belongs_to(Foodgroup)]
 //#[table_name = "foods"]
 pub struct Food {
     pub id: i32,
@@ -76,6 +77,7 @@ const FOOD_COLUMNS: FoodColumns = (
     foods::country,
     foods::ingredients,
 );
+
 impl Food {
     pub fn new() -> Self {
         Self {
@@ -141,6 +143,66 @@ impl Food {
             ndv.push(ndf);
         }
         Ok(ndv)
+    }
+    pub fn get_report(
+        &self,
+        max: i64,
+        off: i64,
+        sort: String,
+        min: f64,
+        mx: f64,
+        nid: i32,
+        conn: &PgConnection,
+    ) -> Result<Vec<ReportForm>, Box<dyn Error  +Send +Sync>> {
+        use crate::schema::foods::dsl::*;
+        use crate::schema::nutrient_data::dsl::*;
+
+          
+        let data = match &*sort {
+            "portion"=>foods
+                .inner_join(nutrient_data).select((fdc_id,upc,description,serving_size,serving_description,serving_unit,value,portion_value))
+                 .filter(nutrient_id.eq(nid))
+                .filter(portion_value.between(&min,&mx))
+                .limit(max)
+                .offset(off)
+                .order(portion_value.desc())
+                .load::<(String,String,String,Option<f64>,Option<String>,Option<String>,f64,f64)>(conn)?,
+            _ => nutrient_data.inner_join(foods).select((fdc_id,upc,description,serving_size,serving_description,serving_unit,value,portion_value))
+            .filter(nutrient_id.eq(nid)) 
+            .filter(value.between(&min,&mx))
+             .limit(max)
+             .offset(off)
+             .order(value.desc())
+             .load::<(String,String,String,Option<f64>,Option<String>,Option<String>,f64,f64)>(conn)?,
+        };
+        let mut rdv: Vec<ReportForm> = Vec::new();
+       
+        for i in &data {
+            let (f,u,d,ss,sd,su,v, pv) = &i;
+            rdv.push(ReportForm{
+                unit_value: *v,
+                portion_value: *pv,
+                fdc_id: f.to_string(),
+                description: d.to_string(),
+                upc: u.to_string(),
+                serving_size: *ss, 
+                serving_description: Some(
+                    sd
+                        .as_ref()
+                        .map(|n| n.to_string())
+                        .unwrap_or("unknown".to_string()),
+                ),
+                serving_unit: Some(
+                    su
+                        .as_ref()
+                        .map(|n| n.to_string())
+                        .unwrap_or("unknown".to_string()),
+                ),
+                });
+        
+            
+        }
+        Ok(rdv)
     }
 }
 impl Get for Food {
@@ -532,7 +594,6 @@ impl Nutrientdata {
             food_id: 0,
         }
     }
-    
 }   
     
 impl Browse for Nutrientdata {
@@ -650,33 +711,7 @@ pub struct ReportForm {
     pub unit_value: f64,
     pub portion_value: f64,
 }
-impl ReportForm {
-    pub fn create((nd,f):(&Nutrientdata,&Food)) -> Self {
-        Self {
-        unit_value: nd.value,
-        portion_value: nd.portion_value,
-        fdc_id: f.fdc_id.to_string(),
-        description: f.description.to_string(),
-        upc: f.upc.to_string(),
-        serving_size: f.serving_size, 
-        serving_description: Some(
-            f
-                .serving_description
-                .as_ref()
-                .map(|n| n.to_string())
-                .unwrap_or("unknown".to_string()),
-        ),
-        serving_unit: Some(
-            f
-                .serving_unit
-                .as_ref()
-                .map(|n| n.to_string())
-                .unwrap_or("unknown".to_string()),
-        ),
-        }
 
-    }
-}
 #[cfg(test)]
 mod tests {
     use super::*;
