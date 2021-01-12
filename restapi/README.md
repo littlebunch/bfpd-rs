@@ -59,3 +59,37 @@ Then run the server from the project root (the path where cargo.toml is located)
 The client will be available at  http://localhost:8080/restapi.
 
 ## Sample Queries
+
+### Find food UPC 000000018753 with all nutrient data
+
+```bash
+curl -H "Content-type:application/json" http://localhost:8080/food/000000018753  
+
+where:  
+id is upc, fdc_id or database id  
+```
+
+### List foods with all nutrient data  
+
+```bash
+curl http://localhost:8080/foods?max=50&offset=0&sort=description&order=asc  
+
+where:  
+sort = order by description, fdc_id or upc  
+order = asc or desc  
+max =  number of foods to return  
+offset = start browse on record offset  
+```
+
+### List foods ordered by nutrient value
+
+```bash
+curl http://localhost:8080/report?sort=portion_value&max=50&offset=0&nutrient=204&vmin=10&vmax=100
+
+where:  
+sort = portion value or 100 g equivalent value  
+max =  number of foods to return  
+nutrient = nutrient number to report  
+vmin = minimum nutrient value to return
+vmax = maximum nutrient value to return  
+```
