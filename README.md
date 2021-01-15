@@ -1,6 +1,6 @@
 # bfpd-rs
 
-[Rust](https://www.rust-lang.org) libraries and binaries for loading [USDA Branded Food Products](https://fdc.nal.usda.gov) CSV into a PostgreSQL or MariaDB database.  Included binaries are a [GraphQL](https://graphql.org) server and a CLI utility for ingesting the CSV.
+[Rust](https://www.rust-lang.org) libraries and binaries for loading [USDA Branded Food Products](https://fdc.nal.usda.gov) CSV into a PostgreSQL or MariaDB database.  Included binaries are REST and [GraphQL](https://graphql.org) servers and a CLI utility for ingesting the CSV.
 
 ## What's here
 
