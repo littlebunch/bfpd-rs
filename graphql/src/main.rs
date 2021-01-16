@@ -17,7 +17,7 @@ use crate::graphql_schema::{create_schema, Context, Schema};
 fn graphiql() -> HttpResponse {
     let url = match env::var("GRAPHIQL_URL") {
         Ok(x) => x,
-        Err(_e) => "http://localhost:8080/graphql".to_string(),
+        Err(_e) => "http://localhost:8000/graphql".to_string(),
     };
     //let html = graphiql_source("http://localhost:8080/graphql");
     let html = graphiql_source(&url);
@@ -54,7 +54,7 @@ async fn main() -> std::io::Result<()> {
             .service(graphql)
             .service(graphiql)
     })
-    .bind("0.0.0.0:8080")?
+    .bind("0.0.0.0:8000")?
     .run()
     .await
 }
