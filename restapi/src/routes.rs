@@ -118,26 +118,26 @@ pub struct Reportquery {
 #[get("/report")]
 pub async fn nutrient_report(
     ctx: Data<Context>,
-    browse: web::Query<Reportquery>,
+    rq: web::Query<Reportquery>,
 ) -> Result<HttpResponse, Error> {
     let conn = ctx.db.get().expect("couldn't get DB connection from pool");
     let mut errs: Vec<ErrorResponse> = Vec::new();
     let mut n = Nutrient::new();
-    let max = match browse.max {
+    let max = match rq.max {
         None => 50,
-        _ => browse.max.unwrap(),
+        _ => rq.max.unwrap(),
     };
     if max > MAX_RECS || max < 1 {
         errs.push(ErrorResponse::new(CustomError::MaxValidationError));
     }
-    let offset = match browse.offset {
+    let offset = match rq.offset {
         None => 0,
-        _ => browse.offset.unwrap(),
+        _ => rq.offset.unwrap(),
     };
     if offset < 0 {
         errs.push(ErrorResponse::new(CustomError::OffsetError));
     }
-    n.nutrientno = browse.nutrient.to_string();
+    n.nutrientno = rq.nutrient.to_string();
     let n = match n.find_by_no(&conn) {
         Ok(data) => data.id,
         Err(_e) => -1,
@@ -145,9 +145,9 @@ pub async fn nutrient_report(
     if n == -1 {
         errs.push(ErrorResponse::new(CustomError::MaxValidationError));
     }
-    let mut sort = match browse.sort {
+    let mut sort = match rq.sort {
         None => "value".to_string(),
-        _ => browse.sort.as_ref().unwrap().to_string(),
+        _ => rq.sort.as_ref().unwrap().to_string(),
     };
     sort = sort.to_lowercase();
     sort = match &*sort {
@@ -158,14 +158,14 @@ pub async fn nutrient_report(
     if sort.is_empty() {
         errs.push(ErrorResponse::new(CustomError::ReportSortError));
     }
-    if browse.vmin > browse.vmax {
+    if rq.vmin > rq.vmax {
         errs.push(ErrorResponse::new(CustomError::MinMaxError));
     }
     if errs.len() > 0 {
         return HttpResponse::BadRequest().json(errs).await;
     }
     let f = Food::new();
-    let data = web::block(move || f.get_report(max as i64, offset as i64, sort, browse.vmin,browse.vmax,n,&conn))
+    let data = web::block(move || f.get_report(max as i64, offset as i64, sort, rq.vmin,rq.vmax,n,&conn))
         .await
         .unwrap();
     Ok(HttpResponse::Ok().json(data))

@@ -1,12 +1,8 @@
 extern crate diesel;
-use self::diesel::{prelude::*, sql_types::*};
+use self::diesel::{prelude::*, sql_types::*,dsl::count_star,expression::sql_literal::sql,mysql::MysqlConnection};
 use crate::schema::{derivations, foods, manufacturers, nutrient_data, nutrients};
-use crate::Browse;
-use crate::{Get,Count};
+use crate::{Browse,Get,Count};
 use chrono::{NaiveDate, NaiveDateTime};
-use diesel::dsl::count_star;
-use diesel::expression::sql_literal::sql;
-use diesel::mysql::MysqlConnection;
 use regex::Regex;
 use std::error::Error;
 #[derive(

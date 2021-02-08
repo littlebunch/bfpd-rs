@@ -1,13 +1,8 @@
 extern crate diesel;
-
-use self::diesel::prelude::*;
+use self::diesel::{prelude::*,dsl::count_star,pg::{Pg,expression::dsl::any,PgConnection}};
 use crate::schema::{derivations, foods, manufacturers, nutrient_data, nutrients};
 use crate::{Browse, Count, Get};
 use chrono::{NaiveDate, NaiveDateTime};
-use diesel::dsl::count_star;
-use diesel::pg::expression::dsl::any;
-use diesel::pg::Pg;
-use diesel::pg::PgConnection;
 use diesel_full_text_search::{plainto_tsquery,TsVectorExtensions};
 use regex::Regex;
 use std::error::Error;
@@ -22,9 +17,7 @@ use std::error::Error;
     Deserialize,
     Debug,
 )]
-//#[belongs_to(Manufacturer)]
-//#[belongs_to(Foodgroup)]
-//#[table_name = "foods"]
+
 pub struct Food {
     pub id: i32,
     pub publication_date: NaiveDateTime,
