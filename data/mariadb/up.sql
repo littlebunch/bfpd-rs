@@ -73,9 +73,9 @@ CREATE TABLE `foods` (
   `available_date` datetime NOT NULL,
   `upc` varchar(24) NOT NULL,
   `fdc_id` varchar(24) NOT NULL,
-  `description` varchar(255) NOT NULL,
+  `description` mediumtext NOT NULL,
   `food_group_id` int(10) NOT NULL DEFAULT 0,
-  `manufacturer_id` int(10) NOT NULL DEFAULT 0,
+  `brand_id` int(10) NOT NULL DEFAULT 0,
   `datasource` varchar(8) NOT NULL,
   `serving_size` double DEFAULT NULL,
   `serving_unit` varchar(24) DEFAULT NULL,
@@ -85,27 +85,30 @@ CREATE TABLE `foods` (
   PRIMARY KEY (`id`),
   KEY `foods_fdc_id_IDX` (`fdc_id`) USING BTREE,
   KEY `foods_upc_IDX` (`upc`) USING BTREE,
-  KEY `foods_FK` (`manufacturer_id`),
+  KEY `foods_FK` (`brand_id`),
   KEY `foods_description_IDX` (`description`) USING BTREE,
-  KEY `foods_manufacturer_id_IDX` (`manufacturer_id`) USING BTREE,
+  KEY `foods_brand_id_IDX` (`brand_id`) USING BTREE,
   KEY `foods_food_group_id_IDX` (`food_group_id`) USING BTREE,
-  CONSTRAINT `foods_FK` FOREIGN KEY (`manufacturer_id`) REFERENCES `manufacturers` (`id`),
+  CONSTRAINT `foods_FK` FOREIGN KEY (`brand_id`) REFERENCES `brands` (`id`),
   CONSTRAINT `foods_FK_1` FOREIGN KEY (`food_group_id`) REFERENCES `food_groups` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1679718 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `manufacturers`
+-- Table structure for table `s`
 --
 
-DROP TABLE IF EXISTS `manufacturers`;
+DROP TABLE IF EXISTS `brands`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `manufacturers` (
+CREATE TABLE `brands` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL DEFAULT '',
+  `owner` varchar(255) NOT NULL DEFAULT '',
+  `brand` varchar(255) DEFAULT NULL,
+  `subbrand` varchar(255) DEFAULT NULL,
+
   PRIMARY KEY (`id`),
-  KEY `manufacturers_name_IDX` (`name`) USING BTREE
+  KEY `brand_owner_IDX` (`owner`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=52721 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -119,6 +122,7 @@ DROP TABLE IF EXISTS `nutrient_data`;
 CREATE TABLE `nutrient_data` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
   `value` double NOT NULL DEFAULT 0,
+  `portion_value` double NOT NULL DEFAULT 0,
   `standard_error` double DEFAULT NULL,
   `minimum` double DEFAULT NULL,
   `maximum` double DEFAULT NULL,

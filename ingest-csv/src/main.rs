@@ -56,7 +56,7 @@ fn run() -> Result<usize, Box<dyn Error>> {
     let mut count: usize = 0;
     match csvtype {
         "FOOD" => {
-            println!("Loading foods");
+           /* println!("Loading foods");
             count = match process_foods(path.to_string(), &conn) {
                 Ok(c) => c,
                 Err(e) => {
@@ -64,7 +64,7 @@ fn run() -> Result<usize, Box<dyn Error>> {
                     process::exit(1);
                 }
             };
-            println!("Finished foods.");
+            println!("Finished foods.");*/
             println!("Now loading nutrient data.");
             count += match process_nutdata(path.to_string(), &conn) {
                 Ok(c) => c,

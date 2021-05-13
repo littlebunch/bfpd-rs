@@ -1,6 +1,6 @@
 extern crate diesel;
 use self::diesel::{prelude::*, sql_types::*,dsl::count_star,expression::sql_literal::sql,mysql::MysqlConnection};
-use crate::schema::{derivations, foods, manufacturers, nutrient_data, nutrients};
+use crate::schema::{derivations, foods, brands, nutrient_data, nutrients};
 use crate::{Browse,Get,Count};
 use chrono::{NaiveDate, NaiveDateTime};
 use regex::Regex;
@@ -16,7 +16,7 @@ use std::error::Error;
     Deserialize,
     Debug,
 )]
-#[belongs_to(Manufacturer)]
+#[belongs_to(Brand)]
 #[table_name = "foods"]
 pub struct Food {
     pub id: i32,
@@ -27,7 +27,7 @@ pub struct Food {
     pub fdc_id: String,
     pub description: String,
     pub food_group_id: i32,
-    pub manufacturer_id: i32,
+    pub brand_id: i32,
     pub datasource: String,
     pub serving_size: Option<f64>,
     pub serving_unit: Option<String>,
@@ -46,7 +46,7 @@ impl Food {
             fdc_id: String::from("unknown"),
             description: String::from("unknown"),
             food_group_id: 0,
-            manufacturer_id: 0,
+            brand_id: 0,
             datasource: String::from("unknown"),
             serving_size: None,
             serving_unit: None,
@@ -63,12 +63,12 @@ impl Food {
             .first::<Foodgroup>(conn)?;
         Ok(fg.description)
     }
-    pub fn get_manufacturer_name(&self, conn: &MysqlConnection) -> Result<String, Box<dyn Error>> {
-        use crate::schema::manufacturers::dsl::*;
-        let m = manufacturers
-            .find(&self.manufacturer_id)
-            .first::<Manufacturer>(conn)?;
-        Ok(m.name)
+    pub fn get_owner_name(&self, conn: &MysqlConnection) -> Result<String, Box<dyn Error>> {
+        use crate::schema::brands::dsl::*;
+        let m = brands
+            .find(&self.brand_id)
+            .first::<Brand>(conn)?;
+        Ok(m.owner)
     }
     //
     pub fn get_nutrient_data(
@@ -226,8 +226,8 @@ impl Browse for Food {
             }
         };
 
-        if self.manufacturer_id > 0 {
-            q = q.filter(manufacturer_id.eq(self.manufacturer_id));
+        if self.brand_id > 0 {
+            q = q.filter(brand_id.eq(self.brand_id));
         }
         if self.food_group_id > 0 {
             q = q.filter(food_group_id.eq(self.food_group_id));
@@ -273,8 +273,8 @@ impl Count for Food {
                     .sql(")"),
             );
         }
-        if self.manufacturer_id > 0 {
-            q = q.filter(manufacturer_id.eq(self.manufacturer_id));
+        if self.brand_id > 0 {
+            q = q.filter(brand_id.eq(self.brand_id));
         }
         if self.food_group_id > 0 {
             q = q.filter(food_group_id.eq(self.food_group_id));
@@ -309,37 +309,41 @@ impl Count for Food {
 }
 
 #[derive(Identifiable, Queryable, Associations, PartialEq, Serialize, Deserialize, Debug)]
-#[table_name = "manufacturers"]
-pub struct Manufacturer {
+#[table_name = "brands"]
+pub struct Brand {
     pub id: i32,
-    pub name: String,
+    pub owner: String,
+    pub brand: Option<String>,
+    pub subbrand: Option<String>,
 }
-impl Manufacturer {
+impl Brand {
     pub fn new() -> Self {
         Self {
             id: 0,
-            name: String::from("Unknown"),
+            owner: String::from("Unknown"),
+            brand: None,
+            subbrand: None,
         }
     }
-    pub fn find_by_name(&self, conn: &MysqlConnection) -> Result<Manufacturer, Box<dyn Error>> {
-        use crate::schema::manufacturers::dsl::*;
-        let m = manufacturers
-            .filter(name.eq(&self.name))
-            .first::<Manufacturer>(conn)?;
+    pub fn find_by_owner(&self, conn: &MysqlConnection) -> Result<Brand, Box<dyn Error>> {
+        use crate::schema::brands::dsl::*;
+        let m = brands
+            .filter(owner.eq(&self.owner))
+            .first::<Brand>(conn)?;
         Ok(m)
     }
 }
-impl Get for Manufacturer {
-    type Item = Manufacturer;
+impl Get for Brand {
+    type Item = Brand;
     type Conn = MysqlConnection;
     fn get(&self, conn: &Self::Conn) -> Result<Vec<Self::Item>, Box<dyn Error  +Send +Sync>> {
-        use crate::schema::manufacturers::dsl::*;
-        let data = manufacturers.find(&self.id).load::<Manufacturer>(conn)?;
+        use crate::schema::brands::dsl::*;
+        let data = brands.find(&self.id).load::<Brand>(conn)?;
         Ok(data)
     }
 }
-impl Browse for Manufacturer {
-    type Item = Manufacturer;
+impl Browse for Brand {
+    type Item = Brand;
     type Conn = MysqlConnection;
     fn browse(
         &self,
@@ -349,13 +353,13 @@ impl Browse for Manufacturer {
         order: String,
         conn: &Self::Conn,
     ) -> Result<Vec<Self::Item>, Box<dyn Error  +Send +Sync>> {
-        use crate::schema::manufacturers::dsl::*;
-        let mut q = manufacturers.into_boxed();
+        use crate::schema::brands::dsl::*;
+        let mut q = brands.into_boxed();
         match &*sort {
-            "name" => {
+            "owner" => {
                 q = match &*order {
-                    "name" => q.order(Box::new(name.desc())),
-                    _ => q.order(Box::new(name.asc())),
+                    "owner" => q.order(Box::new(owner.desc())),
+                    _ => q.order(Box::new(owner.asc())),
                 }
             }
             _ => {
@@ -368,7 +372,7 @@ impl Browse for Manufacturer {
         q = q.limit(max).offset(off);
         // let debug = diesel::debug_query::<diesel::mysql::Mysql, _>(&q);
         // println!("The query: {:?}", debug);
-        let data = q.load::<Manufacturer>(conn)?;
+        let data = q.load::<Brand>(conn)?;
         Ok(data)
     }
 }
@@ -726,7 +730,7 @@ mod tests {
         assert_eq!("unknown", f.fdc_id);
         assert_eq!("unknown", f.description);
         assert_eq!(0, f.food_group_id);
-        assert_eq!(0, f.manufacturer_id);
+        assert_eq!(0, f.brand_id);
         assert_eq!("unknown", f.datasource);
         assert_eq!(None, f.serving_size);
         assert_eq!(None, f.serving_unit);

@@ -1,6 +1,5 @@
-use crate::diesel::ExpressionMethods;
-use crate::diesel::RunQueryDsl;
-use crate::models::{Derivation, Food, Foodgroup, Manufacturer, Nutrient, Nutrientdata};
+use crate::diesel::{QueryDsl,RunQueryDsl,ExpressionMethods};
+use crate::models::{Derivation, Food, Foodgroup, Brand, Nutrient, Nutrientdata};
 use crate::Get;
 use chrono::NaiveDateTime;
 use csv::{Reader, StringRecord};
@@ -182,16 +181,19 @@ struct Foodcsv {
     blank: String,               //r[3]
     date_published: String,      //r[4]
     fdc_id_two: String,          //r[5]
-    manufacturer: String,        //r[6]
+    owner: String,        //r[6]
+    brand: String,          //r[7]
+    subbrand: String,       //r[8]
     upc: String,                 //r[7]
     ingredients: String,         //r[8]
-    serving_size: String,        //r[9]
-    serving_unit: String,        //r[10]
-    serving_description: String, //r[11]
-    foodgroup: String,           //r[12]
-    datasource: String,          //r[13]
-    date_modified: String,       //r[14]
-    date_available: String,      //r[15]
+    not_significant: String,    //r[9]
+    serving_size: String,        //r[10]
+    serving_unit: String,        //r[11]
+    serving_description: String, //r[12]
+    foodgroup: String,           //r[13]
+    datasource: String,          //r[14]
+    date_modified: String,       //r[15]
+    date_available: String,      //r[16]
     country: String,
 }
 impl Foodcsv {
@@ -227,29 +229,30 @@ impl Foodcsv {
         f.modified_date = NaiveDateTime::parse_from_str(&mdate, "%Y-%m-%d %H:%M:%S")?;
         f.available_date = NaiveDateTime::parse_from_str(&adate, "%Y-%m-%d %H:%M:%S")?;
         f.food_group_id = self.create_foodgroup_id(conn)?;
-        f.manufacturer_id = self.create_manufacturer_id(conn)?;
+        f.brand_id = self.create_brand_id(conn)?;
 
         Ok(f)
     }
-    /// Returns the database id for a manufacturer as identified by the manufacturer name.  
-    /// Inserts a new manufacturer row if id is not found
-    fn create_manufacturer_id(&self, conn: &MysqlConnection) -> Result<i32, Box<dyn Error>> {
-        use crate::schema::manufacturers::dsl::*;
-        let mut manu = Manufacturer::new();
-        manu.name = self.manufacturer.to_string();
-        if manu.name == "" {
-            manu.name = String::from("Unknown");
+    /// Returns the database id for a brand owner as identified by the owner name.  
+    /// Inserts a new owner row if id is not found
+    fn create_brand_id(&self, conn: &MysqlConnection) -> Result<i32, Box<dyn Error>> {
+        use crate::schema::brands::dsl::*;
+        let mut b = Brand::new();
+        b.owner = self.owner.to_string();
+        if b.owner == "" {
+            b.owner = String::from("Unknown");
         }
-        let mut i = match manu.find_by_name(conn) {
+       let mut i = match b.find_by_owner(conn) {
             Ok(data) => data.id,
             Err(_e) => -1,
         };
         if i == -1 {
-            insert_into(manufacturers)
-                .values(name.eq(manu.name))
+            insert_into(brands)
+                .values(owner.eq(b.owner))
                 .execute(conn)?;
-            i = self.create_manufacturer_id(conn)?;
+            i = self.create_brand_id(conn)?;
         }
+        
         Ok(i)
     }
     /// Returns the database id for a food group as identified by the food group description
@@ -339,6 +342,7 @@ impl NutdataCsv {
             food_id: fid,
         }
     }
+
 }
 /// Deserializes the food_nutrient.csv data into NutdataCsv structs then into Nutrientdata structs
 /// which are then inserted into the nutrient_data table
@@ -367,6 +371,30 @@ pub fn process_nutdata(path: String, conn: &MysqlConnection) -> Result<usize, Bo
             Some(x) => (x as f64 / 100.0) * nd.value,
             None => 0.0,
         };
+        // jump through some hoops to get nutrient_id
+        // necessary because some nutrient_id's in the csv are
+        // nutrientno's and others are nutrient ids
+        let mut nut=Nutrient::new();
+        nut.nutrientno = ndsv.nutrient_id.to_string();
+        // if we have a nutrientno then get the nutrient id
+        // we can end up with a value of -1 if the nutrient id
+        // can't be found
+        let nid = match nut.find_by_no(conn)  {
+            Ok(data)=> data.id,
+            Err(_e)=> {
+                use crate::schema::nutrients::dsl::*;
+                match nutrients.filter(id.eq(&ndsv.nutrient_id)).first::<Nutrient>(conn) {
+                    Ok(data)=> data.id,
+                    Err(_e)=> -1,
+                }
+            }
+
+        };
+        if nid == -1 {
+            println!("Cannot find nutrient value for {} fdc_id = {}",ndsv.nutrient_id,ndsv.fdc_id);
+            continue
+        }
+        nd.nutrient_id = nid;
         nds.push(nd);
         // insert the Nutrientdata when vec contains BATCH_SIZE recs
         if nds.len() % BATCH_SIZE == 0 {
