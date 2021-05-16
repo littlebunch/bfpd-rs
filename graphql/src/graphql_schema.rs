@@ -68,7 +68,7 @@ impl juniper::IntoFieldError for CustomError {
                 }),
             ),
             CustomError::ManuNotFoundError => FieldError::new(
-                "Manufacturer not found.",
+                "Brand not found.",
                 graphql_value!({
                     "type": "NOT_FOUND_ERROR"
                 }),
@@ -84,17 +84,17 @@ impl QueryRoot {
         use std::convert::TryFrom;
         let mut food = Food::new();
         let conn = context.db.get().unwrap();
-        if !filters.manufacturers.is_empty() {
-            let mut fm = Manufacturer::new();
-            fm.name = filters.manufacturers;
-            let i = match fm.find_by_name(&conn) {
+        if !filters.owners.is_empty() {
+            let mut fm = Brand::new();
+            fm.owner = filters.owners;
+            let i = match fm.find_by_owner(&conn) {
                 Ok(data) => data.id,
                 Err(_e) => -1,
             };
             if i == -1 {
                 return Err(CustomError::ManuNotFoundError.into_field_error());
             }
-            food.manufacturer_id = i;
+            food.brand_id = i;
         }
         if !filters.food_group.is_empty() {
             let mut fgg = Foodgroup::new();
@@ -153,17 +153,17 @@ impl QueryRoot {
         let mut food = Food::new();
         // stash filters into the Food struct, this is ugly but helps keep things simple
         // for users and the model
-        if !browse.filters.manufacturers.is_empty() {
-            let mut fm = Manufacturer::new();
-            fm.name = browse.filters.manufacturers;
-            let i = match fm.find_by_name(&conn) {
+        if !browse.filters.owners.is_empty() {
+            let mut fm = Brand::new();
+            fm.owner = browse.filters.owners;
+            let i = match fm.find_by_owner(&conn) {
                 Ok(data) => data.id,
                 Err(_e) => -1,
             };
             if i == -1 {
                 return Err(CustomError::ManuNotFoundError.into_field_error());
             }
-            food.manufacturer_id = i;
+            food.brand_id = i;
         }
         // add food group filter if we have one
         if !browse.filters.food_group.is_empty() {
@@ -244,13 +244,13 @@ impl QueryRoot {
 
         Ok(nv)
     }
-    fn manufacturers(
+    fn brands(
         context: &Context,
         mut max: i32,
         mut offset: i32,
         mut sort: String,
         order: String,
-    ) -> FieldResult<Vec<ManufacturerView>> {
+    ) -> FieldResult<Vec<BrandView>> {
         let conn = context.db.get().unwrap();
         if max > MAX_RECS || max < 1 {
             return Err(CustomError::MaxValidationError.into_field_error());
@@ -258,11 +258,11 @@ impl QueryRoot {
         if offset < 0 {
             return Err(CustomError::OffsetError.into_field_error());
         }
-        let m = Manufacturer::new();
+        let m = Brand::new();
         let data = m.browse(max as i64, offset as i64, sort, order, &conn)?;
-        let mut mv: Vec<ManufacturerView> = Vec::new();
+        let mut mv: Vec<BrandView> = Vec::new();
         for i in &data {
-            mv.push(ManufacturerView::create(&i));
+            mv.push(BrandView::create(&i));
         }
         Ok(mv)
     }
@@ -331,10 +331,10 @@ pub struct Browsefilters {
     #[graphql(name = "fg", description = "Return records from specified food group")]
     pub food_group: String,
     #[graphql(
-        name = "manu",
-        description = "Return records from specified manufacturer"
+        name = "owner",
+        description = "Return records from specified brand owner"
     )]
-    pub manufacturers: String,
+    pub owners: String,
     #[graphql(
         name = "query",
         description = "Filter on terms which appear in the food description and/or ingredients"

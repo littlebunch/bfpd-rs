@@ -10,7 +10,7 @@ pub struct Foodview {
     #[graphql(description = "Date food was updated")]
     pub publication_date: String,
     #[graphql(
-        description = "This date reflects when the product data was last modified by the data provider, i.e., the manufacturer"
+        description = "This date reflects when the product data was last modified by the data provider, i.e., the brand owner"
     )]
     pub modified_date: String,
     #[graphql(
@@ -28,7 +28,7 @@ pub struct Foodview {
     #[graphql(description = "The category of the branded food, assigned by GDSN or Label Insight")]
     pub food_group: String,
     #[graphql(description = "Brand owner for the food")]
-    pub manufacturer: String,
+    pub owner: String,
     #[graphql(description = "Provider of food data -- GDSN or LI")]
     pub datasource: String,
     #[graphql(
@@ -83,7 +83,7 @@ impl Foodview {
             fdc_id: f.fdc_id.to_string(),
             description: f.description.to_string(),
             food_group: f.get_food_group_name(&conn).unwrap(),
-            manufacturer: f.get_manufacturer_name(&conn).unwrap(),
+            owner: f.get_owner_name(&conn).unwrap(),
             datasource: f.datasource.to_string(),
             serving_description: Some(
                 f.serving_description
@@ -175,18 +175,34 @@ impl FoodgroupView {
     }
 }
 #[derive(juniper::GraphQLObject, Debug)]
-#[graphql(description = "The manufacturer (owner) assigned to a food")]
-pub struct ManufacturerView {
-    #[graphql(description = "Unique id identifying a manufacturer")]
+#[graphql(description = "The owner assigned to a food")]
+pub struct BrandView {
+    #[graphql(description = "Unique id identifying a brand")]
     pub id: i32,
-    #[graphql(description = "Manufacturer name")]
-    pub name: String,
+    #[graphql(description = "Brand owner")]
+    pub owner: String,
+    #[graphql(description = "Brand name")]
+    pub brand: Option<String>,
+    #[graphql(description = "Subbrand name")]
+    pub subbrand: Option<String>,
 }
-impl ManufacturerView {
-    pub fn create(m: &Manufacturer) -> Self {
+impl BrandView {
+    pub fn create(m: &Brand) -> Self {
         Self {
             id: m.id,
-            name: m.name.to_string(),
+            owner: m.owner.to_string(),
+            brand: Some(
+                m.brand
+                    .as_ref()
+                    .map(|n| n.to_string())
+                    .unwrap_or("not provided".to_string()),
+            ),
+            subbrand: Some(
+                m.subbrand
+                    .as_ref()
+                    .map(|n| n.to_string())
+                    .unwrap_or("not provided".to_string()),
+            ),
         }
     }
 }
