@@ -127,9 +127,9 @@ CREATE TABLE public.foods (
     available_date timestamp with time zone NOT NULL,
     upc character varying(24) NOT NULL,
     fdc_id character varying(24) NOT NULL,
-    description character varying(255) NOT NULL,
+    description text NOT NULL,
     food_group_id integer DEFAULT 0 NOT NULL,
-    manufacturer_id integer DEFAULT 0 NOT NULL,
+    brand_id integer DEFAULT 0 NOT NULL,
     datasource character varying(8) NOT NULL,
     serving_size double precision,
     serving_unit character varying(24) DEFAULT NULL::character varying,
@@ -143,16 +143,18 @@ CREATE TABLE public.foods (
 ALTER TABLE public.foods OWNER TO gmoore;
 
 --
--- Name: manufacturers; Type: TABLE; Schema: public; Owner: gmoore
+-- Name: brands; Type: TABLE; Schema: public; Owner: gmoore
 --
 
-CREATE TABLE public.manufacturers (
+CREATE TABLE public.brands (
     id integer NOT NULL,
-    name character varying(255) DEFAULT ''::character varying NOT NULL
+    owner character varying(255) DEFAULT ''::character varying NOT NULL,
+    brand character varying(255) DEFAULT NULL::character varying,
+    subbrand character varying(255) DEFAULT NULL::character varying 
 );
 
 
-ALTER TABLE public.manufacturers OWNER TO gmoore;
+ALTER TABLE public.brands OWNER TO gmoore;
 
 --
 -- Name: food_groups_id_seq; Type: SEQUENCE; Schema: public; Owner: gmoore
@@ -199,10 +201,10 @@ ALTER SEQUENCE public.foods_id_seq OWNED BY public.foods.id;
 
 
 --
--- Name: manufacturers_id_seq; Type: SEQUENCE; Schema: public; Owner: gmoore
+-- Name: brands_id_seq; Type: SEQUENCE; Schema: public; Owner: gmoore
 --
 
-CREATE SEQUENCE public.manufacturers_id_seq
+CREATE SEQUENCE public.brands_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -211,13 +213,13 @@ CREATE SEQUENCE public.manufacturers_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.manufacturers_id_seq OWNER TO gmoore;
+ALTER TABLE public.brands_id_seq OWNER TO gmoore;
 
 --
--- Name: manufacturers_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: gmoore
+-- Name: brands_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: gmoore
 --
 
-ALTER SEQUENCE public.manufacturers_id_seq OWNED BY public.manufacturers.id;
+ALTER SEQUENCE public.brands_id_seq OWNED BY public.brands.id;
 
 
 --
@@ -227,6 +229,7 @@ ALTER SEQUENCE public.manufacturers_id_seq OWNED BY public.manufacturers.id;
 CREATE TABLE public.nutrient_data (
     id integer NOT NULL,
     value double precision DEFAULT '0'::double precision NOT NULL,
+   portion_value double precision DEFAULT '0'::double precision NOT NULL,
     standard_error double precision,
     minimum double precision,
     maximum double precision,
@@ -297,10 +300,10 @@ ALTER TABLE ONLY public.foods ALTER COLUMN id SET DEFAULT nextval('public.foods_
 
 
 --
--- Name: manufacturers id; Type: DEFAULT; Schema: public; Owner: gmoore
+-- Name: brands id; Type: DEFAULT; Schema: public; Owner: gmoore
 --
 
-ALTER TABLE ONLY public.manufacturers ALTER COLUMN id SET DEFAULT nextval('public.manufacturers_id_seq'::regclass);
+ALTER TABLE ONLY public.brands ALTER COLUMN id SET DEFAULT nextval('public.brands_id_seq'::regclass);
 
 
 --
@@ -343,11 +346,11 @@ ALTER TABLE ONLY public.foods
 
 
 --
--- Name: manufacturers manufacturers_pkey; Type: CONSTRAINT; Schema: public; Owner: gmoore
+-- Name: brands brands_pkey; Type: CONSTRAINT; Schema: public; Owner: gmoore
 --
 
-ALTER TABLE ONLY public.manufacturers
-    ADD CONSTRAINT manufacturers_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY public.brands
+    ADD CONSTRAINT brands_pkey PRIMARY KEY (id);
 
 
 --
@@ -384,7 +387,7 @@ CREATE INDEX idx_16458_foods_fdc_id_idx ON public.foods USING btree (fdc_id);
 -- Name: idx_16458_foods_fk; Type: INDEX; Schema: public; Owner: gmoore
 --
 
-CREATE INDEX idx_16458_foods_fk ON public.foods USING btree (manufacturer_id);
+CREATE INDEX idx_16458_foods_fk ON public.foods USING btree (brand_id);
 
 
 --
@@ -395,10 +398,10 @@ CREATE INDEX idx_16458_foods_food_group_id_idx ON public.foods USING btree (food
 
 
 --
--- Name: idx_16458_foods_manufacturer_id_idx; Type: INDEX; Schema: public; Owner: gmoore
+-- Name: idx_16458_foods_brand_id_idx; Type: INDEX; Schema: public; Owner: gmoore
 --
 
-CREATE INDEX idx_16458_foods_manufacturer_id_idx ON public.foods USING btree (manufacturer_id);
+CREATE INDEX idx_16458_foods_brand_id_idx ON public.foods USING btree (brand_id);
 
 
 --
@@ -416,10 +419,10 @@ CREATE INDEX idx_16472_food_groups_description_idx ON public.food_groups USING b
 
 
 --
--- Name: idx_16479_manufacturers_name_idx; Type: INDEX; Schema: public; Owner: gmoore
+-- Name: idx_16479_brands_owner_idx; Type: INDEX; Schema: public; Owner: gmoore
 --
 
-CREATE INDEX idx_16479_manufacturers_name_idx ON public.manufacturers USING btree (name);
+CREATE INDEX idx_16479_brands_name_idx ON public.brands USING btree (owner);
 
 
 --
@@ -462,7 +465,7 @@ CREATE INDEX kw_tsvector_idx ON public.foods USING gin (kw_tsvector);
 --
 
 ALTER TABLE ONLY public.foods
-    ADD CONSTRAINT foods_fk FOREIGN KEY (manufacturer_id) REFERENCES public.manufacturers(id) ON UPDATE RESTRICT ON DELETE RESTRICT;
+    ADD CONSTRAINT foods_fk FOREIGN KEY (brand_id) REFERENCES public.brands(id) ON UPDATE RESTRICT ON DELETE RESTRICT;
 
 
 --

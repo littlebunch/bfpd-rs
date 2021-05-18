@@ -554,7 +554,6 @@ impl Nutrientdata {
             food_id: 0,
         }
     }
-
 }   
 impl Browse for Nutrientdata {
     type Item = Nutrientdata;

@@ -22,7 +22,7 @@ table! {
         fdc_id -> Varchar,
         description -> Varchar,
         food_group_id -> Int4,
-        manufacturer_id -> Int4,
+        brand_id -> Int4,
         datasource -> Varchar,
         serving_size -> Nullable<Float8>,
         serving_unit -> Nullable<Varchar>,
@@ -34,12 +34,13 @@ table! {
 }
 
 table! {
-    manufacturers (id) {
+    brands (id) {
         id -> Int4,
-        name -> Varchar,
+        owner -> Varchar,
+        brand -> Nullable<Varchar>,
+        subbrand -> Nullable<Varchar>,
     }
 }
-
 table! {
     nutrient_data (id) {
         id -> Int4,
@@ -65,7 +66,7 @@ table! {
 }
 
 joinable!(foods -> food_groups (food_group_id));
-joinable!(foods -> manufacturers (manufacturer_id));
+joinable!(foods -> brands (brand_id));
 joinable!(nutrient_data -> derivations (derivation_id));
 joinable!(nutrient_data -> foods (food_id));
 joinable!(nutrient_data -> nutrients (nutrient_id));
@@ -74,7 +75,7 @@ allow_tables_to_appear_in_same_query!(
     derivations,
     food_groups,
     foods,
-    manufacturers,
+    brands,
     nutrient_data,
     nutrients,
 );
