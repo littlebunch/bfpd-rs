@@ -1,9 +1,8 @@
-
-#[cfg(feature="maria")]
-use mariadb::models::*;
-#[cfg(feature="postgres")]
-use pg::models::*;
 use crate::graphql_schema::Context;
+#[cfg(feature = "maria")]
+use mariadb::models::*;
+#[cfg(feature = "postgres")]
+use pg::models::*;
 #[derive(juniper::GraphQLObject, Debug)]
 #[graphql(description = "Defines a branded food product")]
 pub struct Foodview {

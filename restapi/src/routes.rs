@@ -165,8 +165,10 @@ pub async fn nutrient_report(
         return HttpResponse::BadRequest().json(errs).await;
     }
     let f = Food::new();
-    let data = web::block(move || f.get_report(max as i64, offset as i64, sort, rq.vmin,rq.vmax,n,&conn))
-        .await
-        .unwrap();
+    let data = web::block(move || {
+        f.get_report(max as i64, offset as i64, sort, rq.vmin, rq.vmax, n, &conn)
+    })
+    .await
+    .unwrap();
     Ok(HttpResponse::Ok().json(data))
 }

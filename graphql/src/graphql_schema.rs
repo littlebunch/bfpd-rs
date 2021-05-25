@@ -2,28 +2,28 @@ extern crate dotenv;
 extern crate serde;
 extern crate serde_derive;
 extern crate serde_json;
-#[cfg(feature="maria")]
-use mariadb::db::MysqlPool;
-#[cfg(feature="maria")]
-use mariadb::models::*;
-#[cfg(feature="maria")]
-use mariadb::{Browse, Count, Get};
-#[cfg(feature="postgres")]
-use pg::db::PgPool;
-#[cfg(feature="postgres")]
-use pg::models::*;
-#[cfg(feature="postgres")]
-use pg::{Browse, Count, Get};
-use juniper::{graphql_value, FieldError, FieldResult, IntoFieldError, RootNode};
 use crate::views::*;
+use juniper::{graphql_value, FieldError, FieldResult, IntoFieldError, RootNode};
+#[cfg(feature = "maria")]
+use mariadb::db::MysqlPool;
+#[cfg(feature = "maria")]
+use mariadb::models::*;
+#[cfg(feature = "maria")]
+use mariadb::{Browse, Count, Get};
+#[cfg(feature = "postgres")]
+use pg::db::PgPool;
+#[cfg(feature = "postgres")]
+use pg::models::*;
+#[cfg(feature = "postgres")]
+use pg::{Browse, Count, Get};
 
 const MAX_RECS: i32 = 150;
 
 #[derive(Clone)]
 pub struct Context {
-    #[cfg(feature="maria")]
+    #[cfg(feature = "maria")]
     pub db: MysqlPool,
-    #[cfg(feature="postgres")]
+    #[cfg(feature = "postgres")]
     pub db: PgPool,
 }
 
@@ -84,9 +84,12 @@ impl QueryRoot {
         use std::convert::TryFrom;
         let mut food = Food::new();
         let conn = context.db.get().unwrap();
-        if !filters.owners.is_empty() {
-            let mut fm = Brand::new();
-            fm.owner = filters.owners;
+        let mut fm = Brand::new();
+        fm.owner = match filters.owners {
+            None => "".to_string(),
+            Some(m) => m,
+        };
+        if !fm.owner.is_empty() {
             let i = match fm.find_by_owner(&conn) {
                 Ok(data) => data.id,
                 Err(_e) => -1,
@@ -96,12 +99,12 @@ impl QueryRoot {
             }
             food.brand_id = i;
         }
-        if !filters.food_group.is_empty() {
-            let mut fgg = Foodgroup::new();
-            fgg.description = filters.food_group;
-            if fgg.description.len() == 0 {
-                fgg.description = String::from("Unknown");
-            }
+        let mut fgg = Foodgroup::new();
+        fgg.description = match filters.food_group {
+            None => "".to_string(),
+            Some(m) => m,
+        };
+        if fgg.description.len() > 0 {
             let i = match fgg.find_by_description(&conn) {
                 Ok(data) => data.id,
                 Err(_e) => -1,
@@ -111,10 +114,14 @@ impl QueryRoot {
             }
             food.food_group_id = i;
         }
-        if !filters.publication_date.is_empty() {
-            food.ingredients = Some(filters.publication_date)
-        }
-        food.description = filters.query;
+        food.ingredients = match filters.publication_date {
+            None => None,
+            Some(m) => Some(m),
+        };
+        food.description = match filters.query {
+            None => "".to_string(),
+            Some(m) => m,
+        };
         let c64 = food.query_count(&conn)?;
         let c32 = i32::try_from(c64)?;
         Ok(Querycount { count: c32 })
@@ -153,9 +160,17 @@ impl QueryRoot {
         let mut food = Food::new();
         // stash filters into the Food struct, this is ugly but helps keep things simple
         // for users and the model
-        if !browse.filters.owners.is_empty() {
-            let mut fm = Brand::new();
-            fm.owner = browse.filters.owners;
+        let filters = match browse.filters {
+            None => Browsefilters::new(),
+            Some(m) => m,
+        };
+
+        let mut fm = Brand::new();
+        fm.owner = match filters.owners {
+            None => "".to_string(),
+            Some(m) => m,
+        };
+        if !fm.owner.is_empty() {
             let i = match fm.find_by_owner(&conn) {
                 Ok(data) => data.id,
                 Err(_e) => -1,
@@ -166,12 +181,12 @@ impl QueryRoot {
             food.brand_id = i;
         }
         // add food group filter if we have one
-        if !browse.filters.food_group.is_empty() {
-            let mut fgg = Foodgroup::new();
-            fgg.description = browse.filters.food_group;
-            if fgg.description.len() == 0 {
-                fgg.description = String::from("Unknown");
-            }
+        let mut fgg = Foodgroup::new();
+        fgg.description = match filters.food_group {
+            None => "".to_string(),
+            Some(m) => m,
+        };
+        if fgg.description.len() > 0 {
             let i = match fgg.find_by_description(&conn) {
                 Ok(data) => data.id,
                 Err(_e) => -1,
@@ -183,12 +198,15 @@ impl QueryRoot {
         }
         // stash publication date filter into food ingredients
         // ugly but expedient
-        if !browse.filters.publication_date.is_empty() {
-            food.ingredients = Some(browse.filters.publication_date)
-        }
+        food.ingredients = match filters.publication_date {
+            None => None,
+            Some(m) => Some(m),
+        };
         // put any search terms into the food description field
-        food.description = browse.filters.query;
-       
+        food.description = match filters.query {
+            None => "".to_string(),
+            Some(m) => m,
+        };
         let data = food.browse(max as i64, offset as i64, sort, order, &conn)?;
         Ok(Foodview::build_view(data, &nids, context))
     }
@@ -318,8 +336,8 @@ pub struct Browsequery {
     pub sort: String,
     #[graphql(description = "Sort order, one of: asc (default) or desc")]
     pub order: String,
-    #[graphql(description = "Filters to apply to the data")]
-    pub filters: Browsefilters,
+    #[graphql(description = "Optional filters to apply to the data")]
+    pub filters: Option<Browsefilters>,
 }
 #[derive(juniper::GraphQLInputObject, Debug)]
 pub struct Browsefilters {
@@ -327,17 +345,27 @@ pub struct Browsefilters {
         name = "pubdate",
         description = "Return records between two publication dates"
     )]
-    pub publication_date: String,
+    pub publication_date: Option<String>,
     #[graphql(name = "fg", description = "Return records from specified food group")]
-    pub food_group: String,
+    pub food_group: Option<String>,
     #[graphql(
         name = "owner",
         description = "Return records from specified brand owner"
     )]
-    pub owners: String,
+    pub owners: Option<String>,
     #[graphql(
         name = "query",
         description = "Filter on terms which appear in the food description and/or ingredients"
     )]
-    pub query: String,
+    pub query: Option<String>,
+}
+impl Browsefilters {
+    fn new() -> Self {
+        Self {
+            publication_date: None,
+            food_group: None,
+            query: None,
+            owners: None,
+        }
+    }
 }

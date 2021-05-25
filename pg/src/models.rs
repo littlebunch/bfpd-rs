@@ -1,9 +1,13 @@
 extern crate diesel;
-use self::diesel::{prelude::*,dsl::count_star,pg::{Pg,expression::dsl::any,PgConnection}};
-use crate::schema::{derivations, foods, brands, nutrient_data, nutrients};
+use self::diesel::{
+    dsl::count_star,
+    pg::{expression::dsl::any, Pg, PgConnection},
+    prelude::*,
+};
+use crate::schema::{brands, derivations, foods, nutrient_data, nutrients};
 use crate::{Browse, Count, Get};
 use chrono::{NaiveDate, NaiveDateTime};
-use diesel_full_text_search::{plainto_tsquery,TsVectorExtensions};
+use diesel_full_text_search::{plainto_tsquery, TsVectorExtensions};
 use regex::Regex;
 use std::error::Error;
 #[derive(
@@ -101,9 +105,7 @@ impl Food {
     }
     pub fn get_owner_name(&self, conn: &PgConnection) -> Result<String, Box<dyn Error>> {
         use crate::schema::brands::dsl::*;
-        let m = brands
-            .find(&self.brand_id)
-            .first::<Brand>(conn)?;
+        let m = brands.find(&self.brand_id).first::<Brand>(conn)?;
         Ok(m.owner)
     }
     //
@@ -146,54 +148,88 @@ impl Food {
         mx: f64,
         nid: i32,
         conn: &PgConnection,
-    ) -> Result<Vec<ReportForm>, Box<dyn Error  +Send +Sync>> {
+    ) -> Result<Vec<ReportForm>, Box<dyn Error + Send + Sync>> {
         use crate::schema::foods::dsl::*;
         use crate::schema::nutrient_data::dsl::*;
 
-          
         let data = match &*sort {
-            "portion"=>foods
-                .inner_join(nutrient_data).select((fdc_id,upc,description,serving_size,serving_description,serving_unit,value,portion_value))
-                 .filter(nutrient_id.eq(nid))
-                .filter(portion_value.between(&min,&mx))
+            "portion" => foods
+                .inner_join(nutrient_data)
+                .select((
+                    fdc_id,
+                    upc,
+                    description,
+                    serving_size,
+                    serving_description,
+                    serving_unit,
+                    value,
+                    portion_value,
+                ))
+                .filter(nutrient_id.eq(nid))
+                .filter(portion_value.between(&min, &mx))
                 .limit(max)
                 .offset(off)
                 .order(portion_value.desc())
-                .load::<(String,String,String,Option<f64>,Option<String>,Option<String>,f64,f64)>(conn)?,
-            _ => nutrient_data.inner_join(foods).select((fdc_id,upc,description,serving_size,serving_description,serving_unit,value,portion_value))
-            .filter(nutrient_id.eq(nid)) 
-            .filter(value.between(&min,&mx))
-             .limit(max)
-             .offset(off)
-             .order(value.desc())
-             .load::<(String,String,String,Option<f64>,Option<String>,Option<String>,f64,f64)>(conn)?,
+                .load::<(
+                    String,
+                    String,
+                    String,
+                    Option<f64>,
+                    Option<String>,
+                    Option<String>,
+                    f64,
+                    f64,
+                )>(conn)?,
+            _ => nutrient_data
+                .inner_join(foods)
+                .select((
+                    fdc_id,
+                    upc,
+                    description,
+                    serving_size,
+                    serving_description,
+                    serving_unit,
+                    value,
+                    portion_value,
+                ))
+                .filter(nutrient_id.eq(nid))
+                .filter(value.between(&min, &mx))
+                .limit(max)
+                .offset(off)
+                .order(value.desc())
+                .load::<(
+                    String,
+                    String,
+                    String,
+                    Option<f64>,
+                    Option<String>,
+                    Option<String>,
+                    f64,
+                    f64,
+                )>(conn)?,
         };
         let mut rdv: Vec<ReportForm> = Vec::new();
-       
+
         for i in &data {
-            let (f,u,d,ss,sd,su,v, pv) = &i;
-            rdv.push(ReportForm{
+            let (f, u, d, ss, sd, su, v, pv) = &i;
+            rdv.push(ReportForm {
                 unit_value: *v,
                 portion_value: *pv,
                 fdc_id: f.to_string(),
                 description: d.to_string(),
                 upc: u.to_string(),
-                serving_size: *ss, 
+                serving_size: *ss,
                 serving_description: Some(
-                    sd
-                        .as_ref()
+                    sd.as_ref()
                         .map(|n| n.to_string())
                         .unwrap_or("unknown".to_string()),
                 ),
                 serving_unit: Some(
-                    su
-                        .as_ref()
+                    su.as_ref()
                         .map(|n| n.to_string())
                         .unwrap_or("unknown".to_string()),
                 ),
-                });
-        
-            
+            });
         }
         Ok(rdv)
     }
@@ -201,16 +237,16 @@ impl Food {
 impl Get for Food {
     type Item = Food;
     type Conn = PgConnection;
-    fn get(&self, conn: &Self::Conn) -> Result<Vec<Self::Item>, Box<dyn Error  +Send +Sync>> {
+    fn get(&self, conn: &Self::Conn) -> Result<Vec<Self::Item>, Box<dyn Error + Send + Sync>> {
         use crate::schema;
         use crate::schema::foods::dsl::*;
         let mut q = schema::foods::table.into_boxed::<Pg>();
         if self.upc != "unknown" {
             q = q.filter(upc.eq(&self.upc));
         } else if self.id > 0 {
-            q=q.filter(id.eq(&self.id));
+            q = q.filter(id.eq(&self.id));
         } else {
-            q=q.filter(fdc_id.eq(&self.fdc_id));
+            q = q.filter(fdc_id.eq(&self.fdc_id));
         }
         let data = q.select(FOOD_COLUMNS).load::<Food>(conn)?;
         Ok(data)
@@ -226,7 +262,7 @@ impl Browse for Food {
         sort: String,
         order: String,
         conn: &Self::Conn,
-    ) -> Result<Vec<Self::Item>, Box<dyn Error +Send +Sync>> {
+    ) -> Result<Vec<Self::Item>, Box<dyn Error + Send + Sync>> {
         use crate::schema;
         use crate::schema::foods::dsl::*;
         let mut q = schema::foods::table.into_boxed::<Pg>();
@@ -291,7 +327,7 @@ impl Browse for Food {
             q = q.filter(publication_date.between(lhs, uhs));
         }
         //let debug = diesel::debug_query::<Pg, _>(&q);
-       //println!("The query: {:?}", debug);
+        //println!("The query: {:?}", debug);
         let data = q
             .select(FOOD_COLUMNS)
             .limit(max)
@@ -303,7 +339,7 @@ impl Browse for Food {
 impl Count for Food {
     type Item = Food;
     type Conn = PgConnection;
-    fn query_count(&self, conn: &Self::Conn) -> Result<i64, Box<dyn Error  +Send +Sync>> {
+    fn query_count(&self, conn: &Self::Conn) -> Result<i64, Box<dyn Error + Send + Sync>> {
         use crate::schema::foods::dsl::*;
         let mut q = foods.into_boxed();
         let mut query = "";
@@ -366,16 +402,14 @@ impl Brand {
     }
     pub fn find_by_owner(&self, conn: &PgConnection) -> Result<Brand, Box<dyn Error>> {
         use crate::schema::brands::dsl::*;
-        let m = brands
-            .filter(owner.eq(&self.owner))
-            .first::<Brand>(conn)?;
+        let m = brands.filter(owner.eq(&self.owner)).first::<Brand>(conn)?;
         Ok(m)
     }
 }
 impl Get for Brand {
     type Item = Brand;
     type Conn = PgConnection;
-    fn get(&self, conn: &Self::Conn) -> Result<Vec<Self::Item>, Box<dyn Error  +Send +Sync>> {
+    fn get(&self, conn: &Self::Conn) -> Result<Vec<Self::Item>, Box<dyn Error + Send + Sync>> {
         use crate::schema::brands::dsl::*;
         let data = brands.find(&self.id).load::<Brand>(conn)?;
         Ok(data)
@@ -391,7 +425,7 @@ impl Browse for Brand {
         sort: String,
         order: String,
         conn: &Self::Conn,
-    ) -> Result<Vec<Self::Item>, Box<dyn Error +Send +Sync>> {
+    ) -> Result<Vec<Self::Item>, Box<dyn Error + Send + Sync>> {
         use crate::schema::brands::dsl::*;
         let mut q = brands.into_boxed();
         match &*sort {
@@ -440,7 +474,7 @@ impl Foodgroup {
 impl Get for Foodgroup {
     type Item = Foodgroup;
     type Conn = PgConnection;
-    fn get(&self, conn: &Self::Conn) -> Result<Vec<Self::Item>, Box<dyn Error  +Send +Sync>> {
+    fn get(&self, conn: &Self::Conn) -> Result<Vec<Self::Item>, Box<dyn Error + Send + Sync>> {
         use crate::schema::food_groups::dsl::*;
         let data = food_groups.find(&self.id).load::<Foodgroup>(conn)?;
         Ok(data)
@@ -456,7 +490,7 @@ impl Browse for Foodgroup {
         sort: String,
         order: String,
         conn: &Self::Conn,
-    ) -> Result<Vec<Self::Item>, Box<dyn Error +Send +Sync>> {
+    ) -> Result<Vec<Self::Item>, Box<dyn Error + Send + Sync>> {
         use crate::schema::food_groups::dsl::*;
         let mut q = food_groups.into_boxed();
         match &*sort {
@@ -511,7 +545,7 @@ impl Nutrient {
 impl Get for Nutrient {
     type Item = Nutrient;
     type Conn = PgConnection;
-    fn get(&self, conn: &Self::Conn) -> Result<Vec<Self::Item>, Box<dyn Error  +Send +Sync>> {
+    fn get(&self, conn: &Self::Conn) -> Result<Vec<Self::Item>, Box<dyn Error + Send + Sync>> {
         use crate::schema::nutrients::dsl::*;
         let data = nutrients
             .filter(nutrientno.eq(&self.nutrientno))
@@ -529,7 +563,7 @@ impl Browse for Nutrient {
         sort: String,
         order: String,
         conn: &Self::Conn,
-    ) -> Result<Vec<Self::Item>, Box<dyn Error +Send +Sync>> {
+    ) -> Result<Vec<Self::Item>, Box<dyn Error + Send + Sync>> {
         use crate::schema::nutrients::dsl::*;
         let mut q = nutrients.into_boxed();
         match &*sort {
@@ -591,8 +625,8 @@ impl Nutrientdata {
             food_id: 0,
         }
     }
-}   
-    
+}
+
 impl Browse for Nutrientdata {
     type Item = Nutrientdata;
     type Conn = PgConnection;
@@ -603,7 +637,7 @@ impl Browse for Nutrientdata {
         sort: String,
         order: String,
         conn: &Self::Conn,
-    ) -> Result<Vec<Self::Item>, Box<dyn Error +Send +Sync>> {
+    ) -> Result<Vec<Self::Item>, Box<dyn Error + Send + Sync>> {
         use crate::schema::nutrient_data::dsl::*;
         let mut q = nutrient_data.into_boxed();
         match &*sort {
@@ -623,22 +657,22 @@ impl Browse for Nutrientdata {
         if self.nutrient_id > 0 {
             q = q.filter(nutrient_id.eq(self.nutrient_id));
         }
-        let min:f64 = match self.minimum {
+        let min: f64 = match self.minimum {
             None => 0.0,
             Some(m) => m,
         };
-        let mut mx:f64 = match self.maximum {
+        let mut mx: f64 = match self.maximum {
             None => 0.0,
             Some(m) => m,
         };
         if min > 0.0 {
             if mx == 0.0 || mx < min {
-                mx=min;
+                mx = min;
             }
             if sort == "portion" {
-              q = q.filter(portion_value.between(&min,&mx));
+                q = q.filter(portion_value.between(&min, &mx));
             } else {
-                q = q.filter(value.between(&min,&mx));
+                q = q.filter(value.between(&min, &mx));
             }
         }
         q = q.limit(max).offset(off);

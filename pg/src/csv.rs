@@ -1,5 +1,5 @@
-use crate::diesel::{QueryDsl,RunQueryDsl,ExpressionMethods};
-use crate::models::{Derivation, Food, Foodgroup, Brand, Nutrient, Nutrientdata};
+use crate::diesel::{ExpressionMethods, QueryDsl, RunQueryDsl};
+use crate::models::{Brand, Derivation, Food, Foodgroup, Nutrient, Nutrientdata};
 use crate::Get;
 use chrono::NaiveDateTime;
 use csv::{Reader, StringRecord};
@@ -181,12 +181,12 @@ struct Foodcsv {
     blank: String,               //r[3]
     date_published: String,      //r[4]
     fdc_id_two: String,          //r[5]
-    owner: String,        //r[6]
-    brand: String,          //r[7]
-    subbrand: String,       //r[8]
+    owner: String,               //r[6]
+    brand: String,               //r[7]
+    subbrand: String,            //r[8]
     upc: String,                 //r[7]
     ingredients: String,         //r[8]
-    not_significant: String,    //r[9]
+    not_significant: String,     //r[9]
     serving_size: String,        //r[10]
     serving_unit: String,        //r[11]
     serving_description: String, //r[12]
@@ -234,7 +234,7 @@ impl Foodcsv {
 
         Ok(f)
     }
-    
+
     /// Returns the database id for a brand owner as identified by the owner name.  
     /// Inserts a new owner row if id is not found
     fn create_brand_id(&self, conn: &PgConnection) -> Result<i32, Box<dyn Error>> {
@@ -244,7 +244,7 @@ impl Foodcsv {
         if b.owner == "" {
             b.owner = String::from("Unknown");
         }
-       let mut i = match b.find_by_owner(conn) {
+        let mut i = match b.find_by_owner(conn) {
             Ok(data) => data.id,
             Err(_e) => -1,
         };
@@ -254,7 +254,7 @@ impl Foodcsv {
                 .execute(conn)?;
             i = self.create_brand_id(conn)?;
         }
-        
+
         Ok(i)
     }
     /// Returns the database id for a food group as identified by the food group description
@@ -384,37 +384,42 @@ pub fn process_nutdata(path: String, conn: &PgConnection) -> Result<usize, Box<d
             f.fdc_id = ndsv.fdc_id.to_string();
             let fv = f.get(conn).expect("Cannot get food id");
             fid = fv[0].id;
-            f.serving_size=fv[0].serving_size;
+            f.serving_size = fv[0].serving_size;
             ofdc_id = ndsv.fdc_id.to_string();
         }
-        
+
         let mut nd = ndsv.create_nutdata(fid);
         nd.portion_value = match f.serving_size {
             Some(x) => (x as f64 / 100.0) * nd.value,
             None => 0.0,
         };
-         // jump through some hoops to get nutrient_id
+        // jump through some hoops to get nutrient_id
         // necessary because some nutrient_id's in the csv are
         // nutrientno's and others are nutrient ids
-        let mut nut=Nutrient::new();
+        let mut nut = Nutrient::new();
         nut.nutrientno = ndsv.nutrient_id.to_string();
         // if we have a nutrientno then get the nutrient id
         // we can end up with a value of -1 if the nutrient id
         // can't be found
-        let nid = match nut.find_by_no(conn)  {
-            Ok(data)=> data.id,
-            Err(_e)=> {
+        let nid = match nut.find_by_no(conn) {
+            Ok(data) => data.id,
+            Err(_e) => {
                 use crate::schema::nutrients::dsl::*;
-                match nutrients.filter(id.eq(&ndsv.nutrient_id)).first::<Nutrient>(conn) {
-                    Ok(data)=> data.id,
-                    Err(_e)=> -1,
+                match nutrients
+                    .filter(id.eq(&ndsv.nutrient_id))
+                    .first::<Nutrient>(conn)
+                {
+                    Ok(data) => data.id,
+                    Err(_e) => -1,
                 }
             }
-
         };
         if nid == -1 {
-            println!("Cannot find nutrient value for {} fdc_id = {}",ndsv.nutrient_id,ndsv.fdc_id);
-            continue
+            println!(
+                "Cannot find nutrient value for {} fdc_id = {}",
+                ndsv.nutrient_id, ndsv.fdc_id
+            );
+            continue;
         }
         nd.nutrient_id = nid;
         match () {

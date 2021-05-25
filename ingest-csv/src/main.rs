@@ -40,9 +40,8 @@ impl Error for ArgError {
 }
 /// imports USDA csv files into the database
 fn run() -> Result<usize, Box<dyn Error>> {
-
     dotenv().ok();
-    
+
     let cli = load_yaml!("clap.yml");
     let matches = App::from_yaml(cli).get_matches();
     let mut csvtype = matches.value_of("type").unwrap_or_default();
@@ -56,7 +55,7 @@ fn run() -> Result<usize, Box<dyn Error>> {
     let mut count: usize = 0;
     match csvtype {
         "FOOD" => {
-           println!("Loading foods");
+            println!("Loading foods");
             count = match process_foods(path.to_string(), &conn) {
                 Ok(c) => c,
                 Err(e) => {
