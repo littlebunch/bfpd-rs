@@ -18,6 +18,7 @@ use pg::models::*;
 use pg::{Browse, Count, Get};
 
 const MAX_RECS: i32 = 150;
+const DEFAULT_RECS: i32 = 50;
 
 #[derive(Clone)]
 pub struct Context {
@@ -133,16 +134,28 @@ impl QueryRoot {
     ) -> FieldResult<Vec<Foodview>> {
         let conn = context.db.get().unwrap();
 
-        let mut max = browse.max;
+        let mut max = match browse.max {
+            None => DEFAULT_RECS,
+            Some(m) => m,
+        };
         if max > MAX_RECS || max < 1 {
             return Err(CustomError::MaxValidationError.into_field_error());
-        }
-        let mut offset = browse.offset;
+        };
+        let mut offset = match browse.offset {
+            None => 0,
+            Some(m) => m,
+        };
         if offset < 0 {
             return Err(CustomError::OffsetError.into_field_error());
         }
-        let mut order = browse.order;
-        let mut sort = browse.sort;
+        let mut order = match browse.order {
+            None => "".to_string(),
+            Some(m) => m,
+        };
+        let mut sort = match browse.sort {
+            None => "".to_string(),
+            Some(m) => m,
+        };
         if sort.is_empty() {
             sort = "id".to_string();
         }
@@ -328,14 +341,14 @@ pub fn create_schema() -> Schema {
     description = "Input object for defining a foods browse query"
 )]
 pub struct Browsequery {
-    #[graphql(description=format!("Maximum records to return up to {}", MAX_RECS))]
-    pub max: i32,
-    #[graphql(description = "Return records starting at an offset into the result set")]
-    pub offset: i32,
-    #[graphql(description = "Sort by, one of: database id (default),description, upc or fdcId")]
-    pub sort: String,
-    #[graphql(description = "Sort order, one of: asc (default) or desc")]
-    pub order: String,
+    #[graphql(description=format!("Maximum records to return up to {}. Optional. Defaults to {}", MAX_RECS,DEFAULT_RECS))]
+    pub max: Option<i32>,
+    #[graphql(description = "Return records starting at an offset into the result set.  Optional.  Defaults to 0")]
+    pub offset: Option<i32>,
+    #[graphql(description = "Optional Sort by, one of: database id (default),description, upc or fdcId")]
+    pub sort: Option<String>,
+    #[graphql(description = "Optional Sort order, one of: asc (default) or desc")]
+    pub order: Option<String>,
     #[graphql(description = "Optional filters to apply to the data")]
     pub filters: Option<Browsefilters>,
 }

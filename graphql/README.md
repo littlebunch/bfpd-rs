@@ -116,11 +116,10 @@ To get you started, here are some sample queries you can paste into the client o
 
 ```bash
 {
-  foods(browse:{max: 150, offset: 0, sort: "description", order:"desc",filters:{query:"",manu:"",fg:"",pubdate:""}}, nids: []) {
+  foods(browse:{max: 150, offset: 0, sort: "description", order:"desc"}, nids: []) {
     upc
     description
-    manufacturer
-    description
+    owner
     ingredients
     foodGroup
     nutrientData {
@@ -133,15 +132,15 @@ To get you started, here are some sample queries you can paste into the client o
 }
 ```
 
-### Search foods,  perform rudimentary searches using keywords in food descriptions and ingredients
+### Search foods,  perform rudimentary searches using keywords in food descriptions and ingredients and return 50 items sorted ASC by ID
 
 ```bash
 {
-  foods(browse: {max: 150, offset: 0, sort: "", order: "", filters: {query:"BTY CRK HLO KTY COOKIE",pubdate: "", fg: "", manu: ""}}, nids: ["208"]) {
+  foods(browse: {filters: {query:"BTY CRK HLO KTY COOKIE"}}, nids: ["208"]) {
     upc
     description
     publicationDate
-    manufacturer
+    owner
     foodGroup
     ingredients
     nutrientData {
@@ -158,21 +157,21 @@ To get you started, here are some sample queries you can paste into the client o
 
 ```bash
 {
-  foodsCount( filters: {query:"BTY CRK HLO KTY COOKIE",pubdate: "", fg: "", manu: ""}) {
+  foodsCount( filters: {query:"BTY CRK HLO KTY COOKIE"}) {
    count
   }
 }
 ```
 
-###4 Browse foods by manufacturer 'General Mills, Inc'
+### Browse foods by brand owner 'General Mills, Inc'
 
 ```bash
 {
-  foods(browse: {max: 150, offset: 0, sort: "", order: "", filters: {query:"",pubdate: "", fg:"", manu: "General Mills, Inc."}}, nids: ["208"]) {
+  foods(browse: { filters: {owner: "General Mills, Inc."}}, nids: ["208"]) {
     upc
     description
     publicationDate
-    manufacturer
+    owner
     foodGroup
     ingredients
   }
@@ -202,13 +201,13 @@ To get you started, here are some sample queries you can paste into the client o
 }
 ```
 
-### List food manufacturers (owners) sorted ascending by name
+### List food brands (owners) sorted ascending by name
 
 ```bash
 {
-  manufacturers(max:150,offset:0,sort:"name",order:"asc") {
+  brands(max:150,offset:0,sort:"name",order:"asc") {
     id
-    name
+    owner
   }
 }
 ```
