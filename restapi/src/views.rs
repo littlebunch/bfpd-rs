@@ -1,12 +1,8 @@
 use crate::routes::Context;
 #[cfg(feature = "maria")]
 use mariadb::models::*;
-#[cfg(feature = "maria")]
-use mariadb::Get;
 #[cfg(feature = "postgres")]
 use pg::models::*;
-#[cfg(feature = "postgres")]
-use pg::Get;
 
 use serde::{Deserialize, Serialize};
 use std::error::Error;
@@ -19,7 +15,7 @@ pub struct Foodview {
     pub fdc_id: String,
     pub description: String,
     pub food_group: String,
-    pub manufacturer: String,
+    pub owner: String,
     pub datasource: String,
     pub serving_size: Option<f64>,
     pub serving_unit: Option<String>,
@@ -70,7 +66,7 @@ impl Foodview {
             fdc_id: f.fdc_id.to_string(),
             description: f.description.to_string(),
             food_group: f.get_food_group_name(&conn).unwrap(),
-            manufacturer: f.get_manufacturer_name(&conn).unwrap(),
+            owner: f.get_owner_name(&conn).unwrap(),
             datasource: f.datasource.to_string(),
             serving_description: Some(
                 f.serving_description
