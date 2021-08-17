@@ -1,6 +1,6 @@
 # bfpd-rs
 
-[Rust](https://www.rust-lang.org) PostgreSQL and MariaDB libraries for processing [USDA Branded Food Products](https://fdc.nal.usda.gov) data.  The Cargo workspace also includes binaries for loading CSV, REST and [GraphQL](https://graphql.org) servers.
+[Rust](https://www.rust-lang.org) PostgreSQL and MariaDB libraries for processing [USDA Branded Food Products](https://fdc.nal.usda.gov) data.  The Cargo workspace also includes binaries for a CLI utility for loading CSV and REST API and [GraphQL](https://graphql.org) servers.
 
 ## What's here
 
