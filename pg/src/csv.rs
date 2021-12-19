@@ -484,8 +484,15 @@ pub fn process_nutrients(path: String, conn: &PgConnection) -> Result<usize, Box
         let nut = ncsv
             .create_nutrient()
             .expect("Can't create nutrient record");
-        nuts.push(nut);
+        if nut.nutrientno != "" {
+            nuts.push(nut);
+        } else {
+            println!("No nutrient_nbr defineded for id {}",nut.id);
+        }
+       
     }
+    
+    
     Ok(insert_into(nutrients).values(&nuts).execute(conn).unwrap())
 }
 #[derive(Deserialize, Debug)]

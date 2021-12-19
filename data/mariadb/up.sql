@@ -127,7 +127,7 @@ CREATE TABLE `nutrient_data` (
   `minimum` double DEFAULT NULL,
   `maximum` double DEFAULT NULL,
   `median` double DEFAULT NULL,
-  `derivation_id` int(10) NOT NULL DEFAULT 0,
+  `derivation_id` int(10) NOT NULL,
   `nutrient_id` int(10)  NOT NULL DEFAULT 0,
   `food_id` int(10) DEFAULT NULL,
   PRIMARY KEY (`id`),

@@ -209,6 +209,10 @@ impl QueryRoot {
             }
             food.food_group_id = i;
         }
+        food.country = match filters.country {
+            None => None,
+            Some(m) => Some(m),
+        };
         // stash publication date filter into food ingredients
         // ugly but expedient
         food.ingredients = match filters.publication_date {
@@ -371,6 +375,12 @@ pub struct Browsefilters {
         description = "Filter on terms which appear in the food description and/or ingredients"
     )]
     pub query: Option<String>,
+    #[graphql(
+        name="country",
+        description= = "Filter on country"
+    )]
+    pub country: Option<String>,
+    
 }
 impl Browsefilters {
     fn new() -> Self {
@@ -379,6 +389,7 @@ impl Browsefilters {
             food_group: None,
             query: None,
             owners: None,
+            country: None,
         }
     }
 }

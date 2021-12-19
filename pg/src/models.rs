@@ -326,6 +326,13 @@ impl Browse for Food {
             let uhs = NaiveDateTime::parse_from_str(&tdate, "%Y%m%d %H:%M:%S")?;
             q = q.filter(publication_date.between(lhs, uhs));
         }
+        let c: String = match &self.country {
+            None => "".to_string(),
+            Some(m) => m.to_string(),
+        };
+        if c != "" {
+            q = q.filter(country.eq(c));
+        }
         //let debug = diesel::debug_query::<Pg, _>(&q);
         //println!("The query: {:?}", debug);
         let data = q

@@ -234,7 +234,7 @@ CREATE TABLE public.nutrient_data (
     minimum double precision,
     maximum double precision,
     median double precision,
-    derivation_id integer DEFAULT 0 NOT NULL,
+    derivation_id integer NOT NULL,
     nutrient_id integer DEFAULT 0 NOT NULL,
     food_id integer DEFAULT 0 NOT NULL
 );
