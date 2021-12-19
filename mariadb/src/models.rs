@@ -287,6 +287,13 @@ impl Browse for Food {
             let uhs = NaiveDateTime::parse_from_str(&tdate, "%Y%m%d %H:%M:%S")?;
             q = q.filter(publication_date.between(lhs, uhs));
         }
+        let c: String = match &self.country {
+            None => "".to_string(),
+            Some(m) => m.to_string(),
+        };
+        if c != "" {
+            q = q.filter(country.eq(c));
+        }
         q = q.limit(max).offset(off);
 
         let data = q.load::<Food>(conn)?;
@@ -313,6 +320,7 @@ impl Count for Food {
         if self.food_group_id > 0 {
             q = q.filter(food_group_id.eq(self.food_group_id));
         }
+        
         // build publication date range if we have at least one date
         let pubrange: String = match &self.ingredients {
             None => "".to_string(),
