@@ -10,7 +10,7 @@ A command line utility for parsing [USDA Branded Food Products](https://fdc.nal.
 
 ### Step 1: Set-up your environment
 
-If you haven't already, install the Rust [toolchain](https://www.rust-lang.org/tools/install) in your work environment.  It's assumed you have the database loaded in either PostgreSQL or MariaDB.  Refer to the [README](https://github.com/littlebunch/bfpd-rs) for how to do this.
+If you haven't already, install the Rust [toolchain](https://www.rust-lang.org/tools/install) in your work environment. 
 
 ### Step 2: Clone this repo
 

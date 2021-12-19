@@ -7,9 +7,9 @@ Feel free to take this project as a starting point for writing your own graphql 
 
 ## What's here
 
-[./src/graphql_schema.rs](https://github.com/littlebunch/graphql-rs/blob/master/src/graphql_schema.rs) -- graphql schema
-[./src/views.rs](https://github.com/littlebunch/graphql-rs/blob/master/src/views.rs)  -- data returned by a query, sort of like business objects
-[./src/main.rs](https://github.com/littlebunch/graphql-rs/blob/master/src/main.rs) -- actix web server init and run  
+[./src/graphql_schema.rs](https://github.com/littlebunch/graphql-rs/blob/master/src/graphql_schema.rs) -- graphql schema    
+[./src/views.rs](https://github.com/littlebunch/graphql-rs/blob/master/src/views.rs)  -- data returned by a query, sort of like business objects   
+[./src/main.rs](https://github.com/littlebunch/graphql-rs/blob/master/src/main.rs) -- actix web server init and run    
 
 ## How to Build
 
