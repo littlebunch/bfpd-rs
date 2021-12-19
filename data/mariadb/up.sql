@@ -1,6 +1,6 @@
 -- MariaDB dump 10.17  Distrib 10.4.13-MariaDB, for osx10.15 (x86_64)
 --
--- Host: localhost    Database: bfpd
+-- Host: localhost    Database: bfpd5
 -- ------------------------------------------------------
 -- Server version	10.4.13-MariaDB
 
@@ -30,6 +30,23 @@ CREATE TABLE `__diesel_schema_migrations` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `brands`
+--
+
+DROP TABLE IF EXISTS `brands`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `brands` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `owner` varchar(255) NOT NULL DEFAULT '',
+  `brand` varchar(255) DEFAULT NULL,
+  `subbrand` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `brand_owner_IDX` (`owner`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=112427 DEFAULT CHARSET=utf8mb4;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `derivations`
 --
 
@@ -56,7 +73,7 @@ CREATE TABLE `food_groups` (
   `description` varchar(255) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `food_groups_description_IDX` (`description`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=481 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=995 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -86,30 +103,13 @@ CREATE TABLE `foods` (
   KEY `foods_fdc_id_IDX` (`fdc_id`) USING BTREE,
   KEY `foods_upc_IDX` (`upc`) USING BTREE,
   KEY `foods_FK` (`brand_id`),
-  KEY `foods_description_IDX` (`description`) USING BTREE,
+  KEY `foods_description_IDX` (`description`(768)) USING BTREE,
   KEY `foods_brand_id_IDX` (`brand_id`) USING BTREE,
   KEY `foods_food_group_id_IDX` (`food_group_id`) USING BTREE,
+  KEY `foods_country_IDX` (`country`) USING BTREE,
   CONSTRAINT `foods_FK` FOREIGN KEY (`brand_id`) REFERENCES `brands` (`id`),
   CONSTRAINT `foods_FK_1` FOREIGN KEY (`food_group_id`) REFERENCES `food_groups` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1679718 DEFAULT CHARSET=utf8mb4;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `s`
---
-
-DROP TABLE IF EXISTS `brands`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `brands` (
-  `id` int(10) NOT NULL AUTO_INCREMENT,
-  `owner` varchar(255) NOT NULL DEFAULT '',
-  `brand` varchar(255) DEFAULT NULL,
-  `subbrand` varchar(255) DEFAULT NULL,
-
-  PRIMARY KEY (`id`),
-  KEY `brand_owner_IDX` (`owner`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=52721 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=5107548 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -127,8 +127,8 @@ CREATE TABLE `nutrient_data` (
   `minimum` double DEFAULT NULL,
   `maximum` double DEFAULT NULL,
   `median` double DEFAULT NULL,
-  `derivation_id` int(10) NOT NULL,
-  `nutrient_id` int(10)  NOT NULL DEFAULT 0,
+  `derivation_id` int(10) NOT NULL DEFAULT 0,
+  `nutrient_id` int(10) NOT NULL DEFAULT 0,
   `food_id` int(10) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `nutrient_data_food_id_IDX` (`food_id`) USING BTREE,
@@ -137,7 +137,7 @@ CREATE TABLE `nutrient_data` (
   CONSTRAINT `nutrient_data_FK` FOREIGN KEY (`nutrient_id`) REFERENCES `nutrients` (`id`),
   CONSTRAINT `nutrient_data_FK_1` FOREIGN KEY (`derivation_id`) REFERENCES `derivations` (`id`),
   CONSTRAINT `nutrient_data_food_FK` FOREIGN KEY (`food_id`) REFERENCES `foods` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9855133 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=54709615 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -148,7 +148,7 @@ DROP TABLE IF EXISTS `nutrients`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `nutrients` (
-  `id` int(10)  NOT NULL,
+  `id` int(10) NOT NULL,
   `nutrientno` varchar(12) NOT NULL,
   `description` varchar(255) NOT NULL,
   `unit` varchar(24) NOT NULL,
@@ -156,3 +156,14 @@ CREATE TABLE `nutrients` (
   UNIQUE KEY `nutrientno` (`nutrientno`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2021-12-19  8:04:44

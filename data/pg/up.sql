@@ -3,7 +3,7 @@
 --
 
 -- Dumped from database version 13.0
--- Dumped by pg_dump version 13.0
+-- Dumped by pg_dump version 13.4
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -70,6 +70,42 @@ CREATE TABLE public.__diesel_schema_migrations (
 ALTER TABLE public.__diesel_schema_migrations OWNER TO gmoore;
 
 --
+-- Name: brands; Type: TABLE; Schema: public; Owner: gmoore
+--
+
+CREATE TABLE public.brands (
+    id integer NOT NULL,
+    owner character varying(255) DEFAULT ''::character varying NOT NULL,
+    brand character varying(255) DEFAULT NULL::character varying,
+    subbrand character varying(255) DEFAULT NULL::character varying
+);
+
+
+ALTER TABLE public.brands OWNER TO gmoore;
+
+--
+-- Name: brands_id_seq; Type: SEQUENCE; Schema: public; Owner: gmoore
+--
+
+CREATE SEQUENCE public.brands_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.brands_id_seq OWNER TO gmoore;
+
+--
+-- Name: brands_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: gmoore
+--
+
+ALTER SEQUENCE public.brands_id_seq OWNED BY public.brands.id;
+
+
+--
 -- Name: derivations; Type: TABLE; Schema: public; Owner: gmoore
 --
 
@@ -117,46 +153,6 @@ CREATE TABLE public.food_groups (
 ALTER TABLE public.food_groups OWNER TO gmoore;
 
 --
--- Name: foods; Type: TABLE; Schema: public; Owner: gmoore
---
-
-CREATE TABLE public.foods (
-    id integer NOT NULL,
-    publication_date timestamp with time zone NOT NULL,
-    modified_date timestamp with time zone NOT NULL,
-    available_date timestamp with time zone NOT NULL,
-    upc character varying(24) NOT NULL,
-    fdc_id character varying(24) NOT NULL,
-    description text NOT NULL,
-    food_group_id integer DEFAULT 0 NOT NULL,
-    brand_id integer DEFAULT 0 NOT NULL,
-    datasource character varying(8) NOT NULL,
-    serving_size double precision,
-    serving_unit character varying(24) DEFAULT NULL::character varying,
-    serving_description character varying(256) DEFAULT NULL::character varying,
-    country character varying(24) DEFAULT NULL::character varying,
-    ingredients text,
-    kw_tsvector tsvector GENERATED ALWAYS AS (to_tsvector('english'::regconfig, (((COALESCE(description, ''::character varying))::text || ' '::text) || COALESCE(ingredients, ''::text)))) STORED
-);
-
-
-ALTER TABLE public.foods OWNER TO gmoore;
-
---
--- Name: brands; Type: TABLE; Schema: public; Owner: gmoore
---
-
-CREATE TABLE public.brands (
-    id integer NOT NULL,
-    owner character varying(255) DEFAULT ''::character varying NOT NULL,
-    brand character varying(255) DEFAULT NULL::character varying,
-    subbrand character varying(255) DEFAULT NULL::character varying 
-);
-
-
-ALTER TABLE public.brands OWNER TO gmoore;
-
---
 -- Name: food_groups_id_seq; Type: SEQUENCE; Schema: public; Owner: gmoore
 --
 
@@ -177,6 +173,32 @@ ALTER TABLE public.food_groups_id_seq OWNER TO gmoore;
 
 ALTER SEQUENCE public.food_groups_id_seq OWNED BY public.food_groups.id;
 
+
+--
+-- Name: foods; Type: TABLE; Schema: public; Owner: gmoore
+--
+
+CREATE TABLE public.foods (
+    id integer NOT NULL,
+    publication_date timestamp with time zone NOT NULL,
+    modified_date timestamp with time zone NOT NULL,
+    available_date timestamp with time zone NOT NULL,
+    upc character varying(24) NOT NULL,
+    fdc_id character varying(24) NOT NULL,
+    description text NOT NULL,
+    food_group_id integer DEFAULT 0 NOT NULL,
+    brand_id integer DEFAULT 0 NOT NULL,
+    datasource character varying(8) NOT NULL,
+    serving_size double precision,
+    serving_unit character varying(24) DEFAULT NULL::character varying,
+    serving_description character varying(256) DEFAULT NULL::character varying,
+    country character varying(24) DEFAULT NULL::character varying,
+    ingredients text,
+    kw_tsvector tsvector GENERATED ALWAYS AS (to_tsvector('english'::regconfig, ((COALESCE(description, (''::character varying)::text) || ' '::text) || COALESCE(ingredients, ''::text)))) STORED
+);
+
+
+ALTER TABLE public.foods OWNER TO gmoore;
 
 --
 -- Name: foods_id_seq; Type: SEQUENCE; Schema: public; Owner: gmoore
@@ -201,40 +223,18 @@ ALTER SEQUENCE public.foods_id_seq OWNED BY public.foods.id;
 
 
 --
--- Name: brands_id_seq; Type: SEQUENCE; Schema: public; Owner: gmoore
---
-
-CREATE SEQUENCE public.brands_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.brands_id_seq OWNER TO gmoore;
-
---
--- Name: brands_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: gmoore
---
-
-ALTER SEQUENCE public.brands_id_seq OWNED BY public.brands.id;
-
-
---
 -- Name: nutrient_data; Type: TABLE; Schema: public; Owner: gmoore
 --
 
 CREATE TABLE public.nutrient_data (
     id integer NOT NULL,
     value double precision DEFAULT '0'::double precision NOT NULL,
-   portion_value double precision DEFAULT '0'::double precision NOT NULL,
+    portion_value double precision DEFAULT '0'::double precision NOT NULL,
     standard_error double precision,
     minimum double precision,
     maximum double precision,
     median double precision,
-    derivation_id integer NOT NULL,
+    derivation_id integer DEFAULT 0 NOT NULL,
     nutrient_id integer DEFAULT 0 NOT NULL,
     food_id integer DEFAULT 0 NOT NULL
 );
@@ -279,6 +279,13 @@ CREATE TABLE public.nutrients (
 ALTER TABLE public.nutrients OWNER TO gmoore;
 
 --
+-- Name: brands id; Type: DEFAULT; Schema: public; Owner: gmoore
+--
+
+ALTER TABLE ONLY public.brands ALTER COLUMN id SET DEFAULT nextval('public.brands_id_seq'::regclass);
+
+
+--
 -- Name: derivations id; Type: DEFAULT; Schema: public; Owner: gmoore
 --
 
@@ -300,13 +307,6 @@ ALTER TABLE ONLY public.foods ALTER COLUMN id SET DEFAULT nextval('public.foods_
 
 
 --
--- Name: brands id; Type: DEFAULT; Schema: public; Owner: gmoore
---
-
-ALTER TABLE ONLY public.brands ALTER COLUMN id SET DEFAULT nextval('public.brands_id_seq'::regclass);
-
-
---
 -- Name: nutrient_data id; Type: DEFAULT; Schema: public; Owner: gmoore
 --
 
@@ -319,6 +319,14 @@ ALTER TABLE ONLY public.nutrient_data ALTER COLUMN id SET DEFAULT nextval('publi
 
 ALTER TABLE ONLY public.__diesel_schema_migrations
     ADD CONSTRAINT __diesel_schema_migrations_pkey PRIMARY KEY (version);
+
+
+--
+-- Name: brands brands_pkey; Type: CONSTRAINT; Schema: public; Owner: gmoore
+--
+
+ALTER TABLE ONLY public.brands
+    ADD CONSTRAINT brands_pkey PRIMARY KEY (id);
 
 
 --
@@ -346,14 +354,6 @@ ALTER TABLE ONLY public.foods
 
 
 --
--- Name: brands brands_pkey; Type: CONSTRAINT; Schema: public; Owner: gmoore
---
-
-ALTER TABLE ONLY public.brands
-    ADD CONSTRAINT brands_pkey PRIMARY KEY (id);
-
-
---
 -- Name: nutrient_data nutrient_data_pkey; Type: CONSTRAINT; Schema: public; Owner: gmoore
 --
 
@@ -367,6 +367,20 @@ ALTER TABLE ONLY public.nutrient_data
 
 ALTER TABLE ONLY public.nutrients
     ADD CONSTRAINT nutrients_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: foods_country_idx; Type: INDEX; Schema: public; Owner: gmoore
+--
+
+CREATE INDEX foods_country_idx ON public.foods USING btree (country);
+
+
+--
+-- Name: idx_16458_foods_brand_id_idx; Type: INDEX; Schema: public; Owner: gmoore
+--
+
+CREATE INDEX idx_16458_foods_brand_id_idx ON public.foods USING btree (brand_id);
 
 
 --
@@ -398,13 +412,6 @@ CREATE INDEX idx_16458_foods_food_group_id_idx ON public.foods USING btree (food
 
 
 --
--- Name: idx_16458_foods_brand_id_idx; Type: INDEX; Schema: public; Owner: gmoore
---
-
-CREATE INDEX idx_16458_foods_brand_id_idx ON public.foods USING btree (brand_id);
-
-
---
 -- Name: idx_16458_foods_upc_idx; Type: INDEX; Schema: public; Owner: gmoore
 --
 
@@ -419,7 +426,7 @@ CREATE INDEX idx_16472_food_groups_description_idx ON public.food_groups USING b
 
 
 --
--- Name: idx_16479_brands_owner_idx; Type: INDEX; Schema: public; Owner: gmoore
+-- Name: idx_16479_brands_name_idx; Type: INDEX; Schema: public; Owner: gmoore
 --
 
 CREATE INDEX idx_16479_brands_name_idx ON public.brands USING btree (owner);
