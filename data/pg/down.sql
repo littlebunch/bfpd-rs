@@ -4,4 +4,4 @@ drop table derivations;
 drop table nutrients;
 drop table foods;
 drop table food_groups;
-drop table manufacturers;
+drop table brands;
