@@ -34,7 +34,7 @@ mysql -u user -p -e"create schema bfpd;"
 
 ### Step 2: Load the data  
 
-At this point, you have a couple of options:  1) download a dump of a recent version of the Branded Food Products database from [https://go.littlebunch.com/posgresql](https://go.littlebunch.com/bfpd5-postgresql-202110.dmp.xz) for a PostgreSQL dump or [https://go.littlebunch.com/mariadb](https://go.littlebunch.com/bfpd5-mariadb-202110.sql.xz) for a MariaDB dump and restore to your local instance or 2) build the database from the ground-up by importing the USDA csv files using the provided ingest-csv command line utility.  
+At this point, you have a couple of options:  1) download a dump of a recent version of the Branded Food Products database from [https://go.littlebunch.com/posgresql](https://go.littlebunch.com/bfpd5-postgresql-202110.sql.xz) for a PostgreSQL dump or [https://go.littlebunch.com/mariadb](https://go.littlebunch.com/bfpd5-mariadb-202110.sql.xz) for a MariaDB dump and restore to your local instance or 2) build the database from the ground-up by importing the USDA csv files using the provided ingest-csv command line utility.  
 
 ### Using a dump file  
 
