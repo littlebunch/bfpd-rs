@@ -45,14 +45,14 @@ For postgreSQL:
 ```bash
 dropdb bfpd5 && createdb
 create bfpd5
-xz -d < [downloaded.sql.xz] | psql -U [user] bfpd5
+xz -d -c < [downloaded.sql.xz] | psql -U [user] bfpd5
 ```
 
 For MariaDB:  
 
 ```bash
 mysql -u [user] -p -e'drop database bfpd5' && mysql -u [user] -p -e'create database bfpd5'
-xz -d [download.sql.xz] | mysql -u [user]mysql] -p bfpd5
+xz -d -c [download.sql.xz] | mysql -u [user]mysql] -p bfpd5
 ```
 
 ### Using the ingest-csv utility  
