@@ -43,13 +43,16 @@ If you are using the first option, download the dump files and restore to your d
 For postgreSQL:
 
 ```bash
-psql -U [user] bfpd < [downloaded.sql]
+dropdb bfpd5 && createdb
+create bfpd5
+xz -d < [downloaded.sql.xz] | psql -U [user] bfpd5
 ```
 
 For MariaDB:  
 
 ```bash
-mysql -u [user] < [downloaded.sql]
+mysql -u [user] -p -e'drop database bfpd5' && mysql -u [user] -p -e'create database bfpd5'
+xz -d [download.sql.xz] | mysql -u [user]mysql] -p bfpd5
 ```
 
 ### Using the ingest-csv utility  
