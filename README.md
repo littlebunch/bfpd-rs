@@ -62,11 +62,11 @@ Instructions for building the ingest-csv executable are provided in the [ingest-
 02. Download and unzip the latest csv from the [FDC website](https://fdc.nal.usda.gov/download-datasets.html) into a directory of your choice.  You will need the Branded Foods and Supporting data for All Downloads zip files:
 
     ```bash
-    wget https://fdc.nal.usda.gov/fdc-datasets/FoodData_Central_branded_food_csv_2021-04-28.zip
+    wget https://fdc.nal.usda.gov/fdc-datasets/FoodData_Central_branded_food_csv_2021-10-28.zip
     ```
 
     ```bash
-    wget https://fdc.nal.usda.gov/fdc-datasets/FoodData_Central_Supporting_Data_csv_2021-04-28.zip
+    wget https://fdc.nal.usda.gov/fdc-datasets/FoodData_Central_Supporting_Data_csv_2021-10-28.zip
     ```
 
 03. Use the Diesel migration scripts in the data directory to create an empty database
