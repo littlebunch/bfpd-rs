@@ -43,8 +43,7 @@ If you are using the first option, download the dump files and restore to your d
 For postgreSQL:
 
 ```bash
-dropdb bfpd5 && createdb
-create bfpd5
+dropdb bfpd5 && createdb bfpd5
 xz -d < [downloaded.sql.xz] | psql -U [user] bfpd5
 ```
 
