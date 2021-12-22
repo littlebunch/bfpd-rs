@@ -91,7 +91,7 @@ Instructions for building the ingest-csv executable are provided in the [ingest-
     ./target/release/ingest-cvs -p /path/to/csv/
     ```
 
-The load takes about 30 minutes depending on your hardware.  Note:  you need to set a DATABASE_URL variable as described in Step 4 in the ingest-csv README. 
+The load takes about 30 minutes to 2+ hours depending on your hardware.  Note:  you need to set a DATABASE_URL variable as described in Step 4 in the ingest-csv README. 
 
 ### Step 3 Publish the data 
 
