@@ -43,16 +43,14 @@ If you are using the first option, download the dump files and restore to your d
 For postgreSQL:
 
 ```bash
-<<<<<<< HEAD
-dropdb bfpd5 && createdb
-create bfpd5
+dropdb bfpd5 && createdb bfpd5 # only if database exists
 xz -d -c < [downloaded.sql.xz] | psql -U [user] bfpd5
 ```
 
 For MariaDB:  
 
 ```bash
-mysql -u [user] -p -e'drop database bfpd5' && mysql -u [user] -p -e'create database bfpd5'
+mysql -u [user] -p -e'drop database bfpd5' && mysql -u [user] -p -e'create database bfpd5' # only if database exists
 xz -d -c [download.sql.xz] | mysql -u [user]mysql] -p bfpd5
 ```
 
