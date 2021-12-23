@@ -51,7 +51,7 @@ For MariaDB:
 
 ```bash
 mysql -u [user] -p -e'drop database bfpd5' && mysql -u [user] -p -e'create database bfpd5' # only if database exists
-xz -d -c [download.sql.xz] | mysql -u [user]mysql] -p bfpd5
+xz -d -c [download.sql.xz] | mysql -u [user] -p bfpd5
 ```
 
 ### Using the ingest-csv utility  
