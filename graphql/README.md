@@ -163,7 +163,7 @@ To get you started, here are some sample queries you can paste into the client o
 }
 ```
 
-### Browse foods by brand owner 'General Mills, Inc'
+### Browse foods by brand owner 'General Mills'
 
 ```bash
 {
@@ -174,6 +174,20 @@ To get you started, here are some sample queries you can paste into the client o
     owner
     foodGroup
     ingredients
+  }
+}
+```
+
+### Browse foods for "prawn" by country 'New Zealand'
+
+```bash
+{
+  foods(browse: { filters: {query:"prawn",country: "New Zealand"}}, nids: ["208"]) {
+    upc
+    description
+    publicationDate
+    owner
+    country
   }
 }
 ```
