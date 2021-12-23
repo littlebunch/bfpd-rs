@@ -56,7 +56,7 @@ Then run the server from the project root (the path where cargo.toml is located)
 ./target/release/restapi
 ```
 
-The client will be available at  http://localhost:8080/restapi.
+The client will be available at  http://localhost:8080/.
 
 ## Sample Queries
 
@@ -72,7 +72,7 @@ id is upc, fdc_id or database id
 ### List foods with all nutrient data  
 
 ```bash
-curl -H "Content-type:application/json" http://localhost:8080/foods?max=50&offset=0&sort=description&order=asc  
+curl -H "Content-type:application/json" -D '{max:50,offset:0,sort:"description",order:"asc"}' http://localhost:8080/foods 
 
 where:  
 sort = order by description, fdc_id or upc  
@@ -84,7 +84,7 @@ offset = start browse on record offset
 ### List foods ordered by nutrient value
 
 ```bash
-curl -H "Content-type:application/json" http://localhost:8080/report?sort=portion_value&max=50&offset=0&nutrient=204&vmin=10&vmax=100
+curl -H "Content-type:application/json" -D '{sort:"portion_value",max:50,offset:0,nutrient:"208",vmin:10,vmax:100}' http://localhost:8080/report 
 
 where:  
 sort = portion value or 100 g equivalent value  
