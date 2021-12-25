@@ -110,6 +110,7 @@ pub struct Reportquery {
     max: Option<i32>,
     offset: Option<i32>,
     sort: Option<String>,
+    order: Option<String>,
     nutrient: String,
     vmin: f64,
     vmax: f64,
@@ -158,6 +159,15 @@ pub async fn nutrient_report(
     if sort.is_empty() {
         errs.push(ErrorResponse::new(CustomError::ReportSortError));
     }
+    let mut order = match rq.order {
+        None =>"asc".to_string(),
+        _ => rq.order.as_ref().unwrap().to_string(),
+    };
+    order = order.to_lowercase();
+    order = match &*order {
+        "asc" => "asc".to_string(),
+        _ => "desc".to_string(),
+    };
     if rq.vmin > rq.vmax {
         errs.push(ErrorResponse::new(CustomError::MinMaxError));
     }
@@ -166,7 +176,7 @@ pub async fn nutrient_report(
     }
     let f = Food::new();
     let data = web::block(move || {
-        f.get_report(max as i64, offset as i64, sort, rq.vmin, rq.vmax, n, &conn)
+        f.get_report(max as i64, offset as i64, sort, order, rq.vmin, rq.vmax, n, &conn)
     })
     .await
     .unwrap();

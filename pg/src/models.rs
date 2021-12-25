@@ -144,6 +144,7 @@ impl Food {
         max: i64,
         off: i64,
         sort: String,
+        ord: String,
         min: f64,
         mx: f64,
         nid: i32,
@@ -151,62 +152,122 @@ impl Food {
     ) -> Result<Vec<ReportForm>, Box<dyn Error + Send + Sync>> {
         use crate::schema::foods::dsl::*;
         use crate::schema::nutrient_data::dsl::*;
-
+        
         let data = match &*sort {
-            "portion" => foods
-                .inner_join(nutrient_data)
-                .select((
-                    fdc_id,
-                    upc,
-                    description,
-                    serving_size,
-                    serving_description,
-                    serving_unit,
-                    value,
-                    portion_value,
-                ))
-                .filter(nutrient_id.eq(nid))
-                .filter(portion_value.between(&min, &mx))
-                .limit(max)
-                .offset(off)
-                .order(portion_value.desc())
-                .load::<(
-                    String,
-                    String,
-                    String,
-                    Option<f64>,
-                    Option<String>,
-                    Option<String>,
-                    f64,
-                    f64,
-                )>(conn)?,
-            _ => nutrient_data
-                .inner_join(foods)
-                .select((
-                    fdc_id,
-                    upc,
-                    description,
-                    serving_size,
-                    serving_description,
-                    serving_unit,
-                    value,
-                    portion_value,
-                ))
-                .filter(nutrient_id.eq(nid))
-                .filter(value.between(&min, &mx))
-                .limit(max)
-                .offset(off)
-                .order(value.desc())
-                .load::<(
-                    String,
-                    String,
-                    String,
-                    Option<f64>,
-                    Option<String>,
-                    Option<String>,
-                    f64,
-                    f64,
-                )>(conn)?,
+            "portion" => 
+                match &*ord {
+                    "asc" => foods
+                        .inner_join(nutrient_data)
+                        .select((
+                            fdc_id,
+                            upc,
+                            description,
+                            serving_size,
+                            serving_description,
+                            serving_unit,
+                            value,
+                            portion_value,
+                        ))
+                        .filter(nutrient_id.eq(nid))
+                        .filter(portion_value.between(&min, &mx))
+                        .limit(max)
+                        .offset(off)
+                        .order( portion_value.asc())
+                        .load::<(
+                            String,
+                            String,
+                            String,
+                            Option<f64>,
+                            Option<String>,
+                            Option<String>,
+                            f64,
+                            f64,
+                        )>(conn)?,
+                    _ => foods
+                        .inner_join(nutrient_data)
+                        .select((
+                            fdc_id,
+                            upc,
+                            description,
+                            serving_size,
+                            serving_description,
+                            serving_unit,
+                            value,
+                            portion_value,
+                        ))
+                        .filter(nutrient_id.eq(nid))
+                        .filter(portion_value.between(&min, &mx))
+                        .limit(max)
+                        .offset(off)
+                        .order( portion_value.desc())
+                        .load::<(
+                            String,
+                            String,
+                            String,
+                            Option<f64>,
+                            Option<String>,
+                            Option<String>,
+                            f64,
+                            f64,
+                        )>(conn)?,
+                },
+            _ => 
+                match &*ord {
+                    "asc" =>nutrient_data
+                        .inner_join(foods)
+                        .select((
+                            fdc_id,
+                            upc,
+                            description,
+                            serving_size,
+                            serving_description,
+                            serving_unit,
+                            value,
+                            portion_value,
+                        ))
+                        .filter(nutrient_id.eq(nid))
+                        .filter(value.between(&min, &mx))
+                        .limit(max)
+                        .offset(off)
+                        .order(value.asc())
+                        .load::<(
+                            String,
+                            String,
+                            String,
+                            Option<f64>,
+                            Option<String>,
+                            Option<String>,
+                            f64,
+                            f64,
+                        )>(conn)?,
+                    _ =>  nutrient_data
+                    .inner_join(foods)
+                    .select((
+                        fdc_id,
+                        upc,
+                        description,
+                        serving_size,
+                        serving_description,
+                        serving_unit,
+                        value,
+                        portion_value,
+                    ))
+                    .filter(nutrient_id.eq(nid))
+                    .filter(value.between(&min, &mx))
+                    .limit(max)
+                    .offset(off)
+                    .order(value.desc())
+                    .load::<(
+                        String,
+                        String,
+                        String,
+                        Option<f64>,
+                        Option<String>,
+                        Option<String>,
+                        f64,
+                        f64,
+                    )>(conn)?,
+                    },
         };
         let mut rdv: Vec<ReportForm> = Vec::new();
 
